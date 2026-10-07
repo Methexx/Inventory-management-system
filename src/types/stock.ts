@@ -1,5 +1,7 @@
+export type StockDirection = 'increase' | 'decrease';
+
 export interface StockAdjustInput {
-  direction: 'increase' | 'decrease';
+  direction: StockDirection;
   quantity: number;
   note?: string;
 }
