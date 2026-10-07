@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
-import { Sparkles } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CategoryFormDialog } from '@/features/categories/category-form-dialog';
 import { generateProductId } from '@/lib/id';
 import { createProductSchema } from '@/schemas/product-schema';
 import { useInventory } from '@/state/use-inventory';
@@ -35,6 +36,7 @@ export function ProductFormDialog({
   const { state, addProduct, editProduct } = useInventory();
   const isEdit = Boolean(product);
   const formRef = useRef<HTMLFormElement>(null);
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
 
   const existingProductIds = state.products.map((p) => p.productId);
   const categoryIds = categories.map((c) => c.id);
@@ -204,12 +206,30 @@ export function ProductFormDialog({
 
         {/* Category */}
         <div className="space-y-1.5">
-          <Label htmlFor="product-category">Category *</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="product-category">Category *</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCreateCategoryOpen(true)}
+              className="h-6 gap-1 px-1.5 text-xs text-primary"
+            >
+              <Plus className="h-3 w-3" />
+              <span>New Category</span>
+            </Button>
+          </div>
           <select
             id="product-category"
             name="categoryId"
             value={formik.values.categoryId}
-            onChange={formik.handleChange}
+            onChange={(e) => {
+              if (e.target.value === '__new__') {
+                setIsCreateCategoryOpen(true);
+              } else {
+                formik.handleChange(e);
+              }
+            }}
             onBlur={formik.handleBlur}
             className="flex h-9 w-full rounded-md border border-input bg-card px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             aria-invalid={Boolean(formik.touched.categoryId && formik.errors.categoryId)}
@@ -219,6 +239,7 @@ export function ProductFormDialog({
                 {c.name}
               </option>
             ))}
+            <option value="__new__">+ Create new category...</option>
           </select>
           {formik.touched.categoryId && formik.errors.categoryId && (
             <p className="text-xs text-destructive">{formik.errors.categoryId}</p>
@@ -302,6 +323,15 @@ export function ProductFormDialog({
           </Button>
         </DialogFooter>
       </form>
+
+      <CategoryFormDialog
+        open={isCreateCategoryOpen}
+        onOpenChange={setIsCreateCategoryOpen}
+        onCreated={(newCategory) => {
+          formik.setFieldValue('categoryId', newCategory.id);
+          formik.setFieldTouched('categoryId', true);
+        }}
+      />
     </Dialog>
   );
 }
