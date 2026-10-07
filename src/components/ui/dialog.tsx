@@ -87,6 +87,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
         className="relative z-50 w-full max-w-lg rounded-xl border bg-card p-6 shadow-2xl animate-in zoom-in-95"
       >
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="absolute right-4 top-4 h-8 w-8 text-muted-foreground hover:text-foreground"

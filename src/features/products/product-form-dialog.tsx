@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import { Plus, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,7 +38,14 @@ export function ProductFormDialog({
   const formRef = useRef<HTMLFormElement>(null);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
 
-  const existingProductIds = state.products.map((p) => p.productId);
+  const existingProductIds = useMemo(
+    () => state.products.map((p) => p.productId),
+    [state.products],
+  );
+  const [generatedProductId] = useState(() => {
+    const result = generateProductId(existingProductIds);
+    return result.ok ? result.data : '';
+  });
   const categoryIds = categories.map((c) => c.id);
 
   const schema = createProductSchema({
@@ -47,21 +54,20 @@ export function ProductFormDialog({
     mode: isEdit ? 'edit' : 'create',
   });
 
-  const getInitialProductId = () => {
-    if (product) return product.productId;
-    const generated = generateProductId(existingProductIds);
-    return generated.ok ? generated.data : '';
-  };
-
-  const formik = useFormik({
-    initialValues: {
+  const initialValues = useMemo(
+    () => ({
       name: product?.name ?? '',
-      productId: getInitialProductId(),
+      productId: product?.productId ?? generatedProductId,
       categoryId: product?.categoryId ?? categories[0]?.id ?? '',
       price: product ? String(product.price) : '',
       stock: product ? String(product.stock) : '0',
       lowStockThreshold: product ? String(product.lowStockThreshold) : '5',
-    },
+    }),
+    [categories, generatedProductId, product],
+  );
+
+  const formik = useFormik({
+    initialValues,
     enableReinitialize: true,
     validationSchema: schema,
     onSubmit: (values, { setSubmitting }) => {
@@ -102,15 +108,6 @@ export function ProductFormDialog({
       }
     },
   });
-
-  useEffect(() => {
-    if (open && !product && !formik.values.productId) {
-      const res = generateProductId(existingProductIds);
-      if (res.ok) {
-        formik.setFieldValue('productId', res.data);
-      }
-    }
-  }, [open, product, existingProductIds, formik]);
 
   useEffect(() => {
     if (formik.submitCount > 0 && !formik.isValid) {
