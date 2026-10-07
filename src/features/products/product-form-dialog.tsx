@@ -103,7 +103,6 @@ export function ProductFormDialog({
     },
   });
 
-  // When opening add form, ensure an auto-generated ID is populated
   useEffect(() => {
     if (open && !product && !formik.values.productId) {
       const res = generateProductId(existingProductIds);
@@ -113,7 +112,6 @@ export function ProductFormDialog({
     }
   }, [open, product, existingProductIds, formik]);
 
-  // Focus first invalid field on failed submit
   useEffect(() => {
     if (formik.submitCount > 0 && !formik.isValid) {
       const firstErrorField = Object.keys(formik.errors)[0];
@@ -149,7 +147,6 @@ export function ProductFormDialog({
       </DialogHeader>
 
       <form ref={formRef} onSubmit={formik.handleSubmit} className="space-y-4" noValidate>
-        {/* Name */}
         <div className="space-y-1.5">
           <Label htmlFor="product-name">Product Name *</Label>
           <Input
@@ -166,7 +163,6 @@ export function ProductFormDialog({
           )}
         </div>
 
-        {/* Product ID */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="product-id">Product ID (SKU) *</Label>
@@ -204,7 +200,6 @@ export function ProductFormDialog({
           )}
         </div>
 
-        {/* Category */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="product-category">Category *</Label>
@@ -246,7 +241,6 @@ export function ProductFormDialog({
           )}
         </div>
 
-        {/* Price & Stock */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="product-price">Price (LKR) *</Label>
@@ -290,7 +284,6 @@ export function ProductFormDialog({
           </div>
         </div>
 
-        {/* Low Stock Threshold */}
         <div className="space-y-1.5">
           <Label htmlFor="product-threshold">Low Stock Alert Threshold</Label>
           <Input

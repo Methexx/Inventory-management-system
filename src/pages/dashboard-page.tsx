@@ -48,7 +48,6 @@ export function DashboardPage() {
         </Link>
       </div>
 
-      {/* KPI Stat Cards (always renders valid numbers, zeros if empty, never NaN) */}
       <StatCards stats={stats} />
 
       {isEmpty ? (

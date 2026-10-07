@@ -11,7 +11,6 @@ interface StatCardsProps {
 export function StatCards({ stats }: StatCardsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {/* 1. Total Products */}
       <Card className="overflow-hidden border-border/80 shadow-sm transition-all hover:shadow-md">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
@@ -31,7 +30,6 @@ export function StatCards({ stats }: StatCardsProps) {
         </CardContent>
       </Card>
 
-      {/* 2. Total Inventory Value */}
       <Card className="overflow-hidden border-border/80 shadow-sm transition-all hover:shadow-md">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
@@ -51,7 +49,6 @@ export function StatCards({ stats }: StatCardsProps) {
         </CardContent>
       </Card>
 
-      {/* 3. Low Stock Items */}
       <Card className="overflow-hidden border-border/80 shadow-sm transition-all hover:shadow-md">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
@@ -69,7 +66,6 @@ export function StatCards({ stats }: StatCardsProps) {
         </CardContent>
       </Card>
 
-      {/* 4. Out of Stock */}
       <Card className="overflow-hidden border-border/80 shadow-sm transition-all hover:shadow-md">
         <CardContent className="p-5">
           <div className="flex items-center justify-between">

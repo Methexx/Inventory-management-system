@@ -27,12 +27,10 @@ export function ProductsPage() {
   const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState<Product | null>(null);
 
-  // Bulk Actions State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkRestockOpen, setIsBulkRestockOpen] = useState(false);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
-  // Search & Filter State
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
 

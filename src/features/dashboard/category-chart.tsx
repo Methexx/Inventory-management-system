@@ -15,14 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CategoryCount } from '@/state/selectors';
 
 const CHART_COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // emerald
-  '#8b5cf6', // violet
-  '#f59e0b', // amber
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#6366f1', // indigo
-  '#14b8a6', // teal
+  '#3b82f6',
+  '#10b981',
+  '#8b5cf6',
+  '#f59e0b',
+  '#ec4899',
+  '#06b6d4',
+  '#6366f1',
+  '#14b8a6',
 ];
 
 interface CategoryChartProps {
@@ -33,7 +33,6 @@ interface CategoryChartProps {
 export function CategoryChart({ categories, totalProducts }: CategoryChartProps) {
   const [chartType, setChartType] = useState<'bar' | 'donut'>('bar');
 
-  // Filter categories with at least 1 product for the donut, but keep all for bar
   const activeCategories = categories.filter((c) => c.count > 0);
 
   const data = categories.map((cat, index) => ({

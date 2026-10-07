@@ -42,7 +42,6 @@ export function CategorySummary({ categories, totalProducts }: CategorySummaryPr
                   </div>
                 </div>
 
-                {/* Progress bar */}
                 <div className="mt-2 flex items-center gap-2">
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div

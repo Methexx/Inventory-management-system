@@ -102,7 +102,6 @@ export function BulkRestockDialog({
       </DialogHeader>
 
       <form onSubmit={formik.handleSubmit} className="space-y-4" noValidate>
-        {/* Selected Products Preview Summary */}
         <div className="max-h-28 overflow-y-auto rounded-lg border bg-muted/30 p-2.5 text-xs text-muted-foreground">
           <div className="font-semibold text-foreground">Selected items:</div>
           <div className="mt-1 flex flex-wrap gap-1">
@@ -117,7 +116,6 @@ export function BulkRestockDialog({
           </div>
         </div>
 
-        {/* Quantity Field */}
         <div className="space-y-1.5">
           <Label htmlFor="bulk-quantity">Quantity to Add to Each Product *</Label>
           <Input
@@ -138,7 +136,6 @@ export function BulkRestockDialog({
           )}
         </div>
 
-        {/* Note Field */}
         <div className="space-y-1.5">
           <Label htmlFor="bulk-note">Note / Reason (optional)</Label>
           <Input
