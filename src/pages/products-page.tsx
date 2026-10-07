@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
 export function ProductsPage() {
-  const { state, removeProduct } = useInventory();
+  const { state, removeProduct, undoRemoveProduct } = useInventory();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -33,8 +34,28 @@ export function ProductsPage() {
 
   const handleConfirmDelete = () => {
     if (!productToDelete) return;
-    removeProduct(productToDelete.productId);
+    const target = productToDelete;
+    const result = removeProduct(target.productId);
     setProductToDelete(null);
+
+    if (result.ok) {
+      toast.success(`Deleted "${target.name}"`, {
+        duration: 6000,
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            const undoResult = undoRemoveProduct(target);
+            if (undoResult.ok) {
+              toast.info(`Restored "${target.name}"`);
+            } else {
+              toast.error(undoResult.error.message);
+            }
+          },
+        },
+      });
+    } else {
+      toast.error(result.error.message);
+    }
   };
 
   const handleAdjustStock = (_product: Product) => {
