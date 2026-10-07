@@ -45,10 +45,16 @@ export function ProductFormDialog({
     mode: isEdit ? 'edit' : 'create',
   });
 
+  const getInitialProductId = () => {
+    if (product) return product.productId;
+    const generated = generateProductId(existingProductIds);
+    return generated.ok ? generated.data : '';
+  };
+
   const formik = useFormik({
     initialValues: {
       name: product?.name ?? '',
-      productId: product?.productId ?? '',
+      productId: getInitialProductId(),
       categoryId: product?.categoryId ?? categories[0]?.id ?? '',
       price: product ? String(product.price) : '',
       stock: product ? String(product.stock) : '0',
@@ -95,6 +101,16 @@ export function ProductFormDialog({
     },
   });
 
+  // When opening add form, ensure an auto-generated ID is populated
+  useEffect(() => {
+    if (open && !product && !formik.values.productId) {
+      const res = generateProductId(existingProductIds);
+      if (res.ok) {
+        formik.setFieldValue('productId', res.data);
+      }
+    }
+  }, [open, product, existingProductIds, formik]);
+
   // Focus first invalid field on failed submit
   useEffect(() => {
     if (formik.submitCount > 0 && !formik.isValid) {
@@ -113,6 +129,7 @@ export function ProductFormDialog({
     if (res.ok) {
       formik.setFieldValue('productId', res.data);
       formik.setFieldTouched('productId', true);
+      toast.info(`Generated product ID: ${res.data}`);
     } else {
       toast.error(res.error.message);
     }
