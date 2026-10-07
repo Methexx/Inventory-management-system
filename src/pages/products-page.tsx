@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ProductFormDialog } from '@/features/products/product-form-dialog';
 import { ProductList } from '@/features/products/product-list';
@@ -8,9 +9,12 @@ import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
 export function ProductsPage() {
-  const { state } = useInventory();
+  const { state, removeProduct } = useInventory();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   const handleAdd = () => {
     setSelectedProduct(null);
@@ -22,8 +26,15 @@ export function ProductsPage() {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (_product: Product) => {
-    void _product;
+  const handleDelete = (product: Product) => {
+    setProductToDelete(product);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!productToDelete) return;
+    removeProduct(productToDelete.productId);
+    setProductToDelete(null);
   };
 
   const handleAdjustStock = (_product: Product) => {
@@ -67,6 +78,21 @@ export function ProductsPage() {
         }}
         product={selectedProduct}
         categories={state.categories}
+      />
+
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) {
+            setProductToDelete(null);
+          }
+        }}
+        title="Delete Product"
+        description={`Are you sure you want to delete "${productToDelete?.name}" (${productToDelete?.productId})? You can undo this action immediately.`}
+        confirmLabel="Delete Product"
+        variant="destructive"
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );
