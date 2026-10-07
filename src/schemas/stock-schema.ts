@@ -2,18 +2,10 @@ import * as Yup from 'yup';
 
 import { LIMITS } from '@/constants/limits';
 
-// Context the factory needs to enforce stock bounds and overselling prevention.
 interface StockAdjustSchemaContext {
   currentStock: number;
 }
 
-/**
- * Builds the Yup schema for the stock adjustment form.
- *
- * `currentStock` — current stock of the product being adjusted.
- * Decrease is blocked if quantity > currentStock ("Only N units in stock").
- * Increase is blocked if currentStock + quantity > LIMITS.stockMax.
- */
 export function createStockAdjustSchema({ currentStock }: StockAdjustSchemaContext) {
   return Yup.object({
     direction: Yup.string()

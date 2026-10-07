@@ -31,7 +31,6 @@ export function Topbar({ onToggleMobileNav, isMobileNavOpen }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        {/* Persistence Status Indicator */}
         {persistenceStatus === 'pending' && (
           <Badge variant="secondary" className="flex items-center gap-1.5 py-1">
             <Loader2 className="h-3 w-3 animate-spin text-primary" />

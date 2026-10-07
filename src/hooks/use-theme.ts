@@ -1,36 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 import { STORAGE_KEYS } from '@/constants/storage-keys';
+import { readJSON, writeJSON } from '@/lib/storage';
 
 export type Theme = 'light' | 'dark';
 
-/**
- * Custom hook managing light/dark theme preference,
- * persisting to localStorage and synchronizing with the document element class.
- */
-export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.theme);
-      if (stored === 'light' || stored === 'dark') return stored;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } catch {
-      return 'light';
-    }
-  });
+function isTheme(value: unknown): value is Theme {
+  return value === 'light' || value === 'dark';
+}
 
-  useEffect(() => {
+function getSystemTheme(): Theme {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+export function useTheme() {
+  const [theme, setTheme] = useState<Theme>(
+    () => readJSON(STORAGE_KEYS.theme, getSystemTheme(), isTheme).data,
+  );
+
+  useLayoutEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
     }
-    try {
-      localStorage.setItem(STORAGE_KEYS.theme, theme);
-    } catch {
-      // ignore storage access errors
-    }
+    writeJSON(STORAGE_KEYS.theme, theme);
   }, [theme]);
 
   const toggleTheme = () => {

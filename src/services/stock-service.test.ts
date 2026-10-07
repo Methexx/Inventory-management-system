@@ -209,5 +209,15 @@ describe('stock-service', () => {
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error.code).toBe('NOT_FOUND');
     });
+
+    it('requires a caller-supplied history ID for every product', () => {
+      const result = bulkRestock(initialState, ['PRD-100'], 10, undefined, {
+        timestamp: '2026-01-02T00:00:00Z',
+        historyEntryIds: {},
+      });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe('VALIDATION_ERROR');
+    });
   });
 });

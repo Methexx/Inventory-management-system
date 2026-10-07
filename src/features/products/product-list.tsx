@@ -10,6 +10,9 @@ interface ProductListProps {
   products: Product[];
   categories: Category[];
   totalProductsCount: number;
+  selectedIds?: string[];
+  onToggleSelect?: (productId: string) => void;
+  onSelectAll?: (selectAll: boolean) => void;
   onClearFilters?: () => void;
   onAddProduct: () => void;
   onEditProduct: (product: Product) => void;
@@ -24,6 +27,9 @@ export function ProductList({
   products,
   categories,
   totalProductsCount,
+  selectedIds = [],
+  onToggleSelect,
+  onSelectAll,
   onClearFilters,
   onAddProduct,
   onEditProduct,
@@ -33,7 +39,6 @@ export function ProductList({
   sortOrder,
   onSort,
 }: ProductListProps) {
-  // Case 1: Store is completely empty
   if (totalProductsCount === 0) {
     return (
       <EmptyState
@@ -45,7 +50,6 @@ export function ProductList({
     );
   }
 
-  // Case 2: Store has products, but search/filters returned 0 results
   if (products.length === 0) {
     return (
       <EmptyState
@@ -59,11 +63,13 @@ export function ProductList({
 
   return (
     <div>
-      {/* Desktop View (>= 768px) */}
       <div className="hidden md:block">
         <ProductTable
           products={products}
           categories={categories}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
+          onSelectAll={onSelectAll}
           onEdit={onEditProduct}
           onDelete={onDeleteProduct}
           onAdjustStock={onAdjustStock}
@@ -73,11 +79,12 @@ export function ProductList({
         />
       </div>
 
-      {/* Mobile View (< 768px) */}
       <div className="block md:hidden">
         <ProductCards
           products={products}
           categories={categories}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
           onEdit={onEditProduct}
           onDelete={onDeleteProduct}
           onAdjustStock={onAdjustStock}

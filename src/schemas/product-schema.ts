@@ -2,15 +2,12 @@ import * as Yup from 'yup';
 
 import { LIMITS } from '@/constants/limits';
 
-// Context the factory needs to validate uniqueness and category membership.
 interface ProductSchemaContext {
   existingProductIds: string[];
   categoryIds: string[];
   mode: 'create' | 'edit';
 }
 
-// Checks that a number has at most 2 decimal places.
-// Services also enforce this; the schema catches it early with a clear message.
 function hasAtMostTwoDecimals(value: number | undefined): boolean {
   if (value === undefined) return true;
   const str = String(value);
@@ -18,25 +15,13 @@ function hasAtMostTwoDecimals(value: number | undefined): boolean {
   return dot === -1 || str.length - dot - 1 <= 2;
 }
 
-/**
- * Builds the Yup schema for the product form.
- *
- * `existingProductIds` — all current IDs (case-insensitive duplicate check).
- * `categoryIds`        — IDs of categories available in the form.
- * `mode`               — 'create' validates productId uniqueness and stock;
- *                        'edit'   skips both (they are read-only in the form).
- */
 export function createProductSchema({
   existingProductIds,
   categoryIds,
   mode,
 }: ProductSchemaContext) {
-  // Normalise once so the per-field test is a simple Set lookup.
   const takenIds = new Set(existingProductIds.map((id) => id.trim().toUpperCase()));
 
-  // productId: validated and checked for uniqueness only when creating.
-  // .uppercase() normalises for pattern/uniqueness checks; the submit handler
-  // still explicitly uppercases the submitted value (see data-model §9).
   const productIdSchema =
     mode === 'create'
       ? Yup.string()
@@ -49,9 +34,8 @@ export function createProductSchema({
           .test('unique-id', 'Product ID already exists', (value) =>
             value === undefined ? true : !takenIds.has(value),
           )
-      : Yup.string(); // read-only in edit; no constraints needed
+      : Yup.string();
 
-  // stock: only collected on create. Edit uses Stock Adjust.
   const stockSchema =
     mode === 'create'
       ? Yup.number()
@@ -60,7 +44,7 @@ export function createProductSchema({
           .integer('Stock must be a whole number')
           .min(0, 'Stock cannot be negative')
           .max(LIMITS.stockMax, `Stock cannot exceed ${LIMITS.stockMax.toLocaleString()}`)
-      : Yup.number(); // read-only in edit
+      : Yup.number();
 
   return Yup.object({
     name: Yup.string()

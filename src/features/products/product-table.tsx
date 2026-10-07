@@ -2,6 +2,8 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Edit3, SlidersHorizontal, Trash2 } fro
 
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
+import { cn } from '@/lib/utils';
+import { selectStockStatus } from '@/state/selectors';
 import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 
@@ -10,6 +12,9 @@ import { ProductStatusBadge } from './product-status-badge';
 interface ProductTableProps {
   products: Product[];
   categories: Category[];
+  selectedIds?: string[];
+  onToggleSelect?: (productId: string) => void;
+  onSelectAll?: (selectAll: boolean) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onAdjustStock: (product: Product) => void;
@@ -40,6 +45,9 @@ function SortIndicator({
 export function ProductTable({
   products,
   categories,
+  selectedIds = [],
+  onToggleSelect,
+  onSelectAll,
   onEdit,
   onDelete,
   onAdjustStock,
@@ -48,6 +56,8 @@ export function ProductTable({
   onSort,
 }: ProductTableProps) {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+  const selectedSet = new Set(selectedIds);
+  const isAllSelected = products.length > 0 && products.every((p) => selectedSet.has(p.productId));
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -55,6 +65,15 @@ export function ProductTable({
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <tr>
+              <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                <input
+                  type="checkbox"
+                  aria-label="Select all products on page"
+                  className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                  checked={isAllSelected}
+                  onChange={(e) => onSelectAll?.(e.target.checked)}
+                />
+              </th>
               <th scope="col" className="px-6 py-3.5">
                 {onSort ? (
                   <button
@@ -121,9 +140,29 @@ export function ProductTable({
           <tbody className="divide-y divide-border/60">
             {products.map((product) => {
               const categoryName = categoryMap.get(product.categoryId) ?? 'Unassigned';
+              const status = selectStockStatus(product);
 
               return (
-                <tr key={product.productId} className="transition-colors hover:bg-muted/30">
+                <tr
+                  key={product.productId}
+                  className={cn(
+                    'transition-colors',
+                    status === 'out'
+                      ? 'bg-rose-500/[0.04] hover:bg-rose-500/[0.08]'
+                      : status === 'low'
+                        ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
+                        : 'hover:bg-muted/30',
+                  )}
+                >
+                  <td className="w-10 px-4 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${product.name}`}
+                      className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                      checked={selectedSet.has(product.productId)}
+                      onChange={() => onToggleSelect?.(product.productId)}
+                    />
+                  </td>
                   <td className="px-6 py-4">
                     <div className="font-medium text-foreground">{product.name}</div>
                   </td>

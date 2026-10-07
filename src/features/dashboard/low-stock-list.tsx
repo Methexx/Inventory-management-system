@@ -11,7 +11,6 @@ interface LowStockListProps {
 }
 
 export function LowStockList({ products, onAdjustStock }: LowStockListProps) {
-  // Filter products at or below their low stock threshold, sorted by stock ascending
   const attentionItems = products
     .filter((p) => p.stock <= p.lowStockThreshold)
     .sort((a, b) => a.stock - b.stock);

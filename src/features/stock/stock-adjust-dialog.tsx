@@ -71,7 +71,6 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
 
   const { resetForm } = formik;
 
-  // Focus quantity input on dialog open and reset form
   useEffect(() => {
     if (open) {
       resetForm({
@@ -90,7 +89,6 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
 
   if (!product) return null;
 
-  // Live preview calculation
   const parsedQuantity = parseInt(formik.values.quantity, 10);
   const validQuantity = !Number.isNaN(parsedQuantity) && parsedQuantity > 0;
   let resultingStock = currentStock;
@@ -120,7 +118,6 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
       </DialogHeader>
 
       <form onSubmit={formik.handleSubmit} className="space-y-4" noValidate>
-        {/* Direction Toggle */}
         <div className="space-y-1.5">
           <Label>Adjustment Type *</Label>
           <div className="grid grid-cols-2 gap-2">
@@ -160,7 +157,6 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
           </div>
         </div>
 
-        {/* Live Stock Preview Card */}
         <div className="rounded-lg border bg-muted/40 p-3.5">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Stock Preview
@@ -217,7 +213,6 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
           )}
         </div>
 
-        {/* Quantity */}
         <div className="space-y-1.5">
           <Label htmlFor="stock-quantity">Quantity *</Label>
           <Input
@@ -238,7 +233,6 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
           )}
         </div>
 
-        {/* Note */}
         <div className="space-y-1.5">
           <Label htmlFor="stock-note">Reason / Note (optional)</Label>
           <Input

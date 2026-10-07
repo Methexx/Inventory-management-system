@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import { Plus, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,7 +38,14 @@ export function ProductFormDialog({
   const formRef = useRef<HTMLFormElement>(null);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
 
-  const existingProductIds = state.products.map((p) => p.productId);
+  const existingProductIds = useMemo(
+    () => state.products.map((p) => p.productId),
+    [state.products],
+  );
+  const [generatedProductId] = useState(() => {
+    const result = generateProductId(existingProductIds);
+    return result.ok ? result.data : '';
+  });
   const categoryIds = categories.map((c) => c.id);
 
   const schema = createProductSchema({
@@ -47,21 +54,20 @@ export function ProductFormDialog({
     mode: isEdit ? 'edit' : 'create',
   });
 
-  const getInitialProductId = () => {
-    if (product) return product.productId;
-    const generated = generateProductId(existingProductIds);
-    return generated.ok ? generated.data : '';
-  };
-
-  const formik = useFormik({
-    initialValues: {
+  const initialValues = useMemo(
+    () => ({
       name: product?.name ?? '',
-      productId: getInitialProductId(),
+      productId: product?.productId ?? generatedProductId,
       categoryId: product?.categoryId ?? categories[0]?.id ?? '',
       price: product ? String(product.price) : '',
       stock: product ? String(product.stock) : '0',
       lowStockThreshold: product ? String(product.lowStockThreshold) : '5',
-    },
+    }),
+    [categories, generatedProductId, product],
+  );
+
+  const formik = useFormik({
+    initialValues,
     enableReinitialize: true,
     validationSchema: schema,
     onSubmit: (values, { setSubmitting }) => {
@@ -103,17 +109,6 @@ export function ProductFormDialog({
     },
   });
 
-  // When opening add form, ensure an auto-generated ID is populated
-  useEffect(() => {
-    if (open && !product && !formik.values.productId) {
-      const res = generateProductId(existingProductIds);
-      if (res.ok) {
-        formik.setFieldValue('productId', res.data);
-      }
-    }
-  }, [open, product, existingProductIds, formik]);
-
-  // Focus first invalid field on failed submit
   useEffect(() => {
     if (formik.submitCount > 0 && !formik.isValid) {
       const firstErrorField = Object.keys(formik.errors)[0];
@@ -149,7 +144,6 @@ export function ProductFormDialog({
       </DialogHeader>
 
       <form ref={formRef} onSubmit={formik.handleSubmit} className="space-y-4" noValidate>
-        {/* Name */}
         <div className="space-y-1.5">
           <Label htmlFor="product-name">Product Name *</Label>
           <Input
@@ -166,7 +160,6 @@ export function ProductFormDialog({
           )}
         </div>
 
-        {/* Product ID */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="product-id">Product ID (SKU) *</Label>
@@ -204,7 +197,6 @@ export function ProductFormDialog({
           )}
         </div>
 
-        {/* Category */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="product-category">Category *</Label>
@@ -246,7 +238,6 @@ export function ProductFormDialog({
           )}
         </div>
 
-        {/* Price & Stock */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="product-price">Price (LKR) *</Label>
@@ -290,7 +281,6 @@ export function ProductFormDialog({
           </div>
         </div>
 
-        {/* Low Stock Threshold */}
         <div className="space-y-1.5">
           <Label htmlFor="product-threshold">Low Stock Alert Threshold</Label>
           <Input

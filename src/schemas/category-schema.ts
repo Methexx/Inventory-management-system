@@ -2,7 +2,6 @@ import * as Yup from 'yup';
 
 import { LIMITS } from '@/constants/limits';
 
-// Context the factory needs to enforce category name uniqueness.
 interface CategoryItem {
   id: string;
   name: string;
@@ -13,17 +12,10 @@ interface CategorySchemaContext {
   currentCategoryId?: string;
 }
 
-/**
- * Builds the Yup schema for the category form (create / rename).
- *
- * `existingCategories` — list of current categories.
- * `currentCategoryId`  — optional ID of the category being edited (excluded from uniqueness check).
- */
 export function createCategorySchema({
   existingCategories,
   currentCategoryId,
 }: CategorySchemaContext) {
-  // Exclude currentCategoryId when renaming, then normalise remaining names for Set lookup.
   const takenNames = new Set(
     existingCategories
       .filter((cat) => !currentCategoryId || cat.id !== currentCategoryId)

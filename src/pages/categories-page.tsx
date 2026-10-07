@@ -68,7 +68,6 @@ export function CategoriesPage() {
         </Button>
       </div>
 
-      {/* Desktop View (Table) */}
       <div className="hidden overflow-hidden rounded-xl border bg-card shadow-sm md:block">
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -169,7 +168,6 @@ export function CategoriesPage() {
         </table>
       </div>
 
-      {/* Mobile View (Cards) */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:hidden">
         {state.categories.map((category) => {
           const meta = countMap.get(category.id);

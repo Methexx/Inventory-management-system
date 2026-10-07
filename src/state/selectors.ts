@@ -26,11 +26,6 @@ export interface ProductFilters {
   sortOrder: 'asc' | 'desc';
 }
 
-/**
- * Computes high-level inventory statistics for dashboard cards.
- *
- * `totalInventoryValue = Σ price × stock`, rounded to 2 decimals at the end.
- */
 export function selectStats(state: InventoryState): InventoryStats {
   let totalInventoryValue = 0;
   let outOfStockCount = 0;
@@ -57,9 +52,6 @@ export function selectStats(state: InventoryState): InventoryStats {
   };
 }
 
-/**
- * Returns product count and total stock units for every category (including empty categories).
- */
 export function selectCategoryCounts(state: InventoryState): CategoryCount[] {
   return state.categories.map((category) => {
     let count = 0;
@@ -81,38 +73,26 @@ export function selectCategoryCounts(state: InventoryState): CategoryCount[] {
   });
 }
 
-/**
- * Determines a product's stock badge status:
- * - 'out': stock === 0
- * - 'low': 0 < stock <= lowStockThreshold
- * - 'in': stock > lowStockThreshold
- */
 export function selectStockStatus(product: Product): StockStatus {
   if (product.stock === 0) return 'out';
   if (product.stock <= product.lowStockThreshold) return 'low';
   return 'in';
 }
 
-/**
- * Filters and sorts products based on search term, category, stock status, and sort criteria.
- */
 export function selectFilteredProducts(state: InventoryState, filters: ProductFilters): Product[] {
   const normalizedSearch = filters.search.trim().toLowerCase();
 
   const filtered = state.products.filter((product) => {
-    // 1. Search term (matches name or productId)
     if (normalizedSearch.length > 0) {
       const matchesName = product.name.toLowerCase().includes(normalizedSearch);
       const matchesId = product.productId.toLowerCase().includes(normalizedSearch);
       if (!matchesName && !matchesId) return false;
     }
 
-    // 2. Category filter
     if (filters.categoryId !== 'all' && product.categoryId !== filters.categoryId) {
       return false;
     }
 
-    // 3. Stock status filter
     if (filters.stockStatus === 'in' && product.stock === 0) {
       return false;
     }
@@ -129,7 +109,6 @@ export function selectFilteredProducts(state: InventoryState, filters: ProductFi
     return true;
   });
 
-  // 4. Sorting
   const isAsc = filters.sortOrder === 'asc';
 
   return filtered.sort((a, b) => {

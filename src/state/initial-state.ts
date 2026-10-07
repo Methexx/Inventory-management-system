@@ -1,7 +1,6 @@
 import { DEFAULT_CATEGORIES } from '@/constants/default-categories';
 import { LIMITS } from '@/constants/limits';
 import { STORAGE_KEYS } from '@/constants/storage-keys';
-import { createId } from '@/lib/id';
 import { readJSON } from '@/lib/storage';
 import type { Category } from '@/types/category';
 import type { MovementType, StockMovement } from '@/types/history';
@@ -9,12 +8,9 @@ import type { InventoryState } from '@/types/inventory';
 import type { Product } from '@/types/product';
 import type { AppError } from '@/types/result';
 
-/**
- * Creates default seed categories with unique IDs and `isDefault: true`.
- */
 export function createDefaultCategories(): Category[] {
   return DEFAULT_CATEGORIES.map((name) => ({
-    id: createId(),
+    id: `default-${name.toLowerCase()}`,
     name,
     isDefault: true,
   }));
@@ -29,10 +25,6 @@ function hasAtMostTwoDecimals(value: number): boolean {
   const dot = str.indexOf('.');
   return dot === -1 || str.length - dot - 1 <= 2;
 }
-
-// ---------------------------------------------------------------------------
-// Category validation
-// ---------------------------------------------------------------------------
 
 export function isValidCategory(item: unknown): item is Category {
   if (!isRecord(item)) return false;
@@ -60,10 +52,6 @@ export function isValidCategoryList(value: unknown): value is Category[] {
 
   return true;
 }
-
-// ---------------------------------------------------------------------------
-// Product validation
-// ---------------------------------------------------------------------------
 
 export function isValidProduct(item: unknown): item is Product {
   if (!isRecord(item)) return false;
@@ -138,10 +126,6 @@ export function isValidProductList(value: unknown): value is Product[] {
   return true;
 }
 
-// ---------------------------------------------------------------------------
-// History / StockMovement validation
-// ---------------------------------------------------------------------------
-
 const MOVEMENT_TYPES: Set<string> = new Set<MovementType>([
   'initial',
   'restock',
@@ -201,35 +185,16 @@ export function isValidHistoryList(value: unknown): value is StockMovement[] {
   return true;
 }
 
-// ---------------------------------------------------------------------------
-// Theme validation
-// ---------------------------------------------------------------------------
-
 export function isValidTheme(value: unknown): value is 'light' | 'dark' {
   return value === 'light' || value === 'dark';
 }
-
-// ---------------------------------------------------------------------------
-// Initial state loader
-// ---------------------------------------------------------------------------
 
 export interface InitialStateResult {
   state: InventoryState;
   storageError: AppError | null;
 }
 
-/**
- * Loads inventory state from localStorage, validating full record shapes
- * and cross-record category references.
- *
- * - On first run (missing categories), seeds with default categories.
- * - On corrupted data, falls back safely to defaults and exposes the storage error.
- * - If a stored product references a category that does not exist, products fall back to []
- *   and an error is reported.
- * - Never throws.
- */
 export function loadInitialState(): InitialStateResult {
-  // 1. Categories
   const categoriesRead = readJSON<Category[]>(STORAGE_KEYS.categories, [], isValidCategoryList);
 
   let categories: Category[];
@@ -241,7 +206,6 @@ export function loadInitialState(): InitialStateResult {
     categories = categoriesRead.data;
   }
 
-  // 2. Products
   const productsRead = readJSON<Product[]>(STORAGE_KEYS.products, [], isValidProductList);
 
   let products = productsRead.data;
@@ -249,7 +213,6 @@ export function loadInitialState(): InitialStateResult {
     storageError = productsRead.error;
   }
 
-  // Cross-validation: each product must reference an existing category
   const validCategoryIds = new Set(categories.map((c) => c.id));
   const hasInvalidCategoryRef = products.some(
     (product) => !validCategoryIds.has(product.categoryId),
@@ -265,7 +228,6 @@ export function loadInitialState(): InitialStateResult {
     }
   }
 
-  // 3. History (can reference deleted products, so no category/product ref check is required)
   const historyRead = readJSON<StockMovement[]>(STORAGE_KEYS.history, [], isValidHistoryList);
 
   const history = historyRead.data;

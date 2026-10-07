@@ -59,24 +59,19 @@ export function HistoryPage() {
   const [selectedProduct, setSelectedProduct] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
 
-  // Sorted newest first
   const sortedHistory = [...state.history].sort(
     (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
   );
 
-  // Filtered movements
   const filteredHistory = sortedHistory.filter((entry) => {
-    // 1. Product filter
     if (selectedProduct !== 'all' && entry.productId !== selectedProduct) {
       return false;
     }
 
-    // 2. Type filter
     if (selectedType !== 'all' && entry.type !== selectedType) {
       return false;
     }
 
-    // 3. Search filter
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       const matchName = entry.productName.toLowerCase().includes(q);
@@ -110,7 +105,6 @@ export function HistoryPage() {
         </div>
       </div>
 
-      {/* Filter Bar */}
       {state.history.length > 0 && (
         <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-12">
@@ -180,7 +174,6 @@ export function HistoryPage() {
         </div>
       )}
 
-      {/* Content */}
       {state.history.length === 0 ? (
         <EmptyState
           title="No stock movements recorded"
@@ -195,7 +188,6 @@ export function HistoryPage() {
         />
       ) : (
         <>
-          {/* Desktop Table View */}
           <div className="hidden overflow-hidden rounded-xl border bg-card shadow-sm md:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -266,7 +258,6 @@ export function HistoryPage() {
             </table>
           </div>
 
-          {/* Mobile Cards View */}
           <div className="grid grid-cols-1 gap-3 md:hidden">
             {filteredHistory.map((item) => (
               <Card key={item.id} className="overflow-hidden shadow-sm">

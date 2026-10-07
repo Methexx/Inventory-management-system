@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import { BulkActionBar } from '@/features/products/bulk-action-bar';
+import { BulkRestockDialog } from '@/features/products/bulk-restock-dialog';
 import { ProductFiltersBar } from '@/features/products/product-filters-bar';
 import { ProductFormDialog } from '@/features/products/product-form-dialog';
 import { ProductList } from '@/features/products/product-list';
@@ -15,7 +17,7 @@ import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
 export function ProductsPage() {
-  const { state, removeProduct, undoRemoveProduct } = useInventory();
+  const { state, removeProduct, undoRemoveProduct, removeProducts } = useInventory();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -25,7 +27,10 @@ export function ProductsPage() {
   const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState<Product | null>(null);
 
-  // Search & Filter State
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkRestockOpen, setIsBulkRestockOpen] = useState(false);
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
 
@@ -118,6 +123,46 @@ export function ProductsPage() {
     }
   };
 
+  const selectedProducts = state.products.filter((p) => selectedIds.includes(p.productId));
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
+
+  const handleSelectAll = (selectAll: boolean) => {
+    if (selectAll) {
+      const visibleIds = filteredProducts.map((p) => p.productId);
+      setSelectedIds(Array.from(new Set([...selectedIds, ...visibleIds])));
+    } else {
+      const visibleSet = new Set(filteredProducts.map((p) => p.productId));
+      setSelectedIds((prev) => prev.filter((id) => !visibleSet.has(id)));
+    }
+  };
+
+  const handleConfirmBulkDelete = () => {
+    const targets = [...selectedProducts];
+    const result = removeProducts(selectedIds);
+    setIsBulkDeleteOpen(false);
+    setSelectedIds([]);
+
+    if (result.ok) {
+      toast.success(`Deleted ${targets.length} products`, {
+        duration: 6000,
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            targets.forEach((p) => undoRemoveProduct(p));
+            toast.info(`Restored ${targets.length} products`);
+          },
+        },
+      });
+    } else {
+      toast.error(result.error.message);
+    }
+  };
+
   const handleAdjustStock = (product: Product) => {
     setProductToAdjust(product);
     setIsAdjustDialogOpen(true);
@@ -176,6 +221,9 @@ export function ProductsPage() {
         products={filteredProducts}
         categories={state.categories}
         totalProductsCount={state.products.length}
+        selectedIds={selectedIds}
+        onToggleSelect={handleToggleSelect}
+        onSelectAll={handleSelectAll}
         onClearFilters={handleResetFilters}
         onAddProduct={handleAdd}
         onEditProduct={handleEdit}
@@ -184,6 +232,20 @@ export function ProductsPage() {
         sortBy={filters.sortBy}
         sortOrder={filters.sortOrder}
         onSort={handleSort}
+      />
+
+      <BulkActionBar
+        selectedCount={selectedIds.length}
+        onClearSelection={() => setSelectedIds([])}
+        onBulkRestock={() => setIsBulkRestockOpen(true)}
+        onBulkDelete={() => setIsBulkDeleteOpen(true)}
+      />
+
+      <BulkRestockDialog
+        open={isBulkRestockOpen}
+        onOpenChange={setIsBulkRestockOpen}
+        selectedProducts={selectedProducts}
+        onSuccess={() => setSelectedIds([])}
       />
 
       <ProductFormDialog
@@ -222,6 +284,16 @@ export function ProductsPage() {
         confirmLabel="Delete Product"
         variant="destructive"
         onConfirm={handleConfirmDelete}
+      />
+
+      <ConfirmDialog
+        open={isBulkDeleteOpen}
+        onOpenChange={setIsBulkDeleteOpen}
+        title="Delete Selected Products"
+        description={`Are you sure you want to delete ${selectedIds.length} selected products? You can undo this action immediately.`}
+        confirmLabel="Delete Products"
+        variant="destructive"
+        onConfirm={handleConfirmBulkDelete}
       />
     </div>
   );

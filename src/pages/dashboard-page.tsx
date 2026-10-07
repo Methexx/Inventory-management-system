@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
+import { CategoryChart } from '@/features/dashboard/category-chart';
 import { CategorySummary } from '@/features/dashboard/category-summary';
 import { LowStockList } from '@/features/dashboard/low-stock-list';
 import { StatCards } from '@/features/dashboard/stat-cards';
@@ -47,7 +48,6 @@ export function DashboardPage() {
         </Link>
       </div>
 
-      {/* KPI Stat Cards (always renders valid numbers, zeros if empty, never NaN) */}
       <StatCards stats={stats} />
 
       {isEmpty ? (
@@ -58,9 +58,12 @@ export function DashboardPage() {
           onAction={() => {}}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <CategorySummary categories={categoryCounts} totalProducts={stats.totalProducts} />
-          <LowStockList products={state.products} onAdjustStock={handleAdjustStock} />
+        <div className="space-y-6">
+          <CategoryChart categories={categoryCounts} totalProducts={stats.totalProducts} />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <CategorySummary categories={categoryCounts} totalProducts={stats.totalProducts} />
+            <LowStockList products={state.products} onAdjustStock={handleAdjustStock} />
+          </div>
         </div>
       )}
 

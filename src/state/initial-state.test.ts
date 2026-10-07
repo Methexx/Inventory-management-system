@@ -17,8 +17,9 @@ beforeEach(() => {
 });
 
 describe('createDefaultCategories', () => {
-  it('creates default categories with unique IDs and isDefault: true', () => {
+  it('creates default categories with stable IDs and isDefault: true', () => {
     const categories = createDefaultCategories();
+    const repeatedCategories = createDefaultCategories();
     expect(categories.length).toBe(DEFAULT_CATEGORIES.length);
 
     const names = categories.map((c) => c.name);
@@ -30,8 +31,15 @@ describe('createDefaultCategories', () => {
       expect(cat.id.length).toBeGreaterThan(0);
     }
 
-    const uniqueIds = new Set(categories.map((c) => c.id));
-    expect(uniqueIds.size).toBe(categories.length);
+    expect(categories.map((c) => c.id)).toEqual(repeatedCategories.map((c) => c.id));
+    expect(categories.map((c) => c.id)).toEqual([
+      'default-electronics',
+      'default-groceries',
+      'default-clothing',
+      'default-stationery',
+      'default-household',
+      'default-other',
+    ]);
   });
 });
 

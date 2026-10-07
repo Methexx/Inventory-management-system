@@ -9,10 +9,8 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar (visible on md and up) */}
       <Sidebar className="hidden w-64 shrink-0 md:flex" />
 
-      {/* Mobile Drawer (visible when isMobileNavOpen is true) */}
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-40 flex md:hidden">
           <div
@@ -27,7 +25,6 @@ export function AppShell() {
         </div>
       )}
 
-      {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar
           onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)}

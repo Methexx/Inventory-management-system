@@ -11,6 +11,8 @@ import { ProductStatusBadge } from './product-status-badge';
 interface ProductCardsProps {
   products: Product[];
   categories: Category[];
+  selectedIds?: string[];
+  onToggleSelect?: (productId: string) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onAdjustStock: (product: Product) => void;
@@ -19,21 +21,37 @@ interface ProductCardsProps {
 export function ProductCards({
   products,
   categories,
+  selectedIds = [],
+  onToggleSelect,
   onEdit,
   onDelete,
   onAdjustStock,
 }: ProductCardsProps) {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+  const selectedSet = new Set(selectedIds);
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {products.map((product) => {
         const categoryName = categoryMap.get(product.categoryId) ?? 'Unassigned';
+        const isSelected = selectedSet.has(product.productId);
 
         return (
-          <Card key={product.productId} className="overflow-hidden shadow-sm">
+          <Card
+            key={product.productId}
+            className={`overflow-hidden shadow-sm transition-all ${
+              isSelected ? 'border-primary/60 bg-primary/[0.02]' : ''
+            }`}
+          >
             <CardContent className="p-4 sm:p-5">
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-3">
+                <input
+                  type="checkbox"
+                  aria-label={`Select ${product.name}`}
+                  className="mt-1 h-4 w-4 shrink-0 rounded border-input text-primary focus:ring-primary"
+                  checked={isSelected}
+                  onChange={() => onToggleSelect?.(product.productId)}
+                />
                 <div className="min-w-0 flex-1">
                   <h4 className="truncate font-semibold text-foreground">{product.name}</h4>
                   <div className="mt-1 flex items-center gap-2">

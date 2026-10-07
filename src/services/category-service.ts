@@ -8,14 +8,6 @@ export interface CreateCategoryMetadata {
   categoryId: string;
 }
 
-/**
- * Creates a new custom category.
- *
- * Rules:
- * - Name must be trimmed and between 2 and 30 characters.
- * - Name must be unique case-insensitively across existing categories.
- * - Always marked with `isDefault: false`.
- */
 export function createCategory(
   state: InventoryState,
   name: string,
@@ -46,15 +38,6 @@ export function createCategory(
   return ok({ category });
 }
 
-/**
- * Renames an existing custom category.
- *
- * Rules:
- * - Category must exist.
- * - Default seed categories cannot be renamed.
- * - Name must be between 2 and 30 characters.
- * - Cannot rename to an existing category's name (case-insensitive).
- */
 export function renameCategory(
   state: InventoryState,
   categoryId: string,
@@ -92,14 +75,6 @@ export function renameCategory(
   return ok({ category: updatedCategory });
 }
 
-/**
- * Deletes an unused custom category.
- *
- * Rules:
- * - Category must exist.
- * - Default seed categories cannot be deleted.
- * - Cannot delete if any product in state references this category.
- */
 export function deleteCategory(
   state: InventoryState,
   categoryId: string,

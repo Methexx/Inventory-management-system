@@ -2,6 +2,8 @@ import { FolderTree, History, LayoutDashboard, Package } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
+import { selectStats } from '@/state/selectors';
+import { useInventory } from '@/state/use-inventory';
 
 interface NavItem {
   label: string;
@@ -23,6 +25,10 @@ export function Sidebar({
   className?: string;
   onItemClick?: () => void;
 }) {
+  const { state } = useInventory();
+  const stats = selectStats(state);
+  const attentionCount = stats.lowStockCount + stats.outOfStockCount;
+
   return (
     <aside className={cn('flex flex-col border-r bg-card/60 backdrop-blur-sm', className)}>
       <div className="flex h-16 items-center gap-3 border-b px-6">
@@ -38,6 +44,8 @@ export function Sidebar({
       <nav className="flex-1 space-y-1 p-4" aria-label="Main Navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
+          const showAttentionBadge = item.path === '/products' && attentionCount > 0;
+
           return (
             <NavLink
               key={item.path}
@@ -46,15 +54,25 @@ export function Sidebar({
               onClick={onItemClick}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
+                  'flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
                   isActive
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )
               }
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span>{item.label}</span>
+              <div className="flex items-center gap-3">
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{item.label}</span>
+              </div>
+              {showAttentionBadge && (
+                <span
+                  className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500/20 px-1.5 text-[11px] font-bold text-amber-600 dark:bg-amber-500/30 dark:text-amber-300"
+                  title={`${attentionCount} products require stock attention`}
+                >
+                  {attentionCount}
+                </span>
+              )}
             </NavLink>
           );
         })}
