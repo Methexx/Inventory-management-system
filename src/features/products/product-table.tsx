@@ -12,6 +12,9 @@ import { ProductStatusBadge } from './product-status-badge';
 interface ProductTableProps {
   products: Product[];
   categories: Category[];
+  selectedIds?: string[];
+  onToggleSelect?: (productId: string) => void;
+  onSelectAll?: (selectAll: boolean) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onAdjustStock: (product: Product) => void;
@@ -42,6 +45,9 @@ function SortIndicator({
 export function ProductTable({
   products,
   categories,
+  selectedIds = [],
+  onToggleSelect,
+  onSelectAll,
   onEdit,
   onDelete,
   onAdjustStock,
@@ -50,6 +56,8 @@ export function ProductTable({
   onSort,
 }: ProductTableProps) {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+  const selectedSet = new Set(selectedIds);
+  const isAllSelected = products.length > 0 && products.every((p) => selectedSet.has(p.productId));
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -57,6 +65,15 @@ export function ProductTable({
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <tr>
+              <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                <input
+                  type="checkbox"
+                  aria-label="Select all products on page"
+                  className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                  checked={isAllSelected}
+                  onChange={(e) => onSelectAll?.(e.target.checked)}
+                />
+              </th>
               <th scope="col" className="px-6 py-3.5">
                 {onSort ? (
                   <button
@@ -137,6 +154,15 @@ export function ProductTable({
                         : 'hover:bg-muted/30',
                   )}
                 >
+                  <td className="w-10 px-4 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${product.name}`}
+                      className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                      checked={selectedSet.has(product.productId)}
+                      onChange={() => onToggleSelect?.(product.productId)}
+                    />
+                  </td>
                   <td className="px-6 py-4">
                     <div className="font-medium text-foreground">{product.name}</div>
                   </td>
