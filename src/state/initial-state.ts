@@ -1,7 +1,6 @@
 import { DEFAULT_CATEGORIES } from '@/constants/default-categories';
 import { LIMITS } from '@/constants/limits';
 import { STORAGE_KEYS } from '@/constants/storage-keys';
-import { createId } from '@/lib/id';
 import { readJSON } from '@/lib/storage';
 import type { Category } from '@/types/category';
 import type { MovementType, StockMovement } from '@/types/history';
@@ -11,7 +10,7 @@ import type { AppError } from '@/types/result';
 
 export function createDefaultCategories(): Category[] {
   return DEFAULT_CATEGORIES.map((name) => ({
-    id: createId(),
+    id: `default-${name.toLowerCase()}`,
     name,
     isDefault: true,
   }));

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useReducer, useRef, useState } from 'rea
 
 import { STORAGE_KEYS } from '@/constants/storage-keys';
 import { createId } from '@/lib/id';
-import { ok } from '@/lib/result';
+import { fail, ok } from '@/lib/result';
 import { writeJSON } from '@/lib/storage';
 import { createCategory, deleteCategory, renameCategory } from '@/services/category-service';
 import {
@@ -234,9 +234,17 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       normalizedIds.has(p.productId.trim().toUpperCase()),
     );
 
+    if (normalizedIds.size === 0) {
+      return fail('VALIDATION_ERROR', 'Select at least one product.');
+    }
+
+    if (removed.length !== normalizedIds.size) {
+      return fail('NOT_FOUND', 'One or more selected products no longer exist.');
+    }
+
     const action = {
       type: 'PRODUCTS_BULK_DELETED' as const,
-      payload: { productIds: ids },
+      payload: { productIds: Array.from(normalizedIds) },
     };
 
     stateRef.current = inventoryReducer(stateRef.current, action);
@@ -250,7 +258,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       const timestamp = new Date().toISOString();
       const historyEntryIds: Record<string, string> = {};
       for (const id of ids) {
-        historyEntryIds[id] = createId();
+        historyEntryIds[id.trim().toUpperCase()] = createId();
       }
 
       const result = bulkRestock(stateRef.current, ids, quantity, note, {

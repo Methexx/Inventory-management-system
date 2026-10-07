@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { useFormik } from 'formik';
 import { TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
-import * as Yup from 'yup';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LIMITS } from '@/constants/limits';
+import { createBulkRestockSchema } from '@/schemas/bulk-restock-schema';
 import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
@@ -24,16 +23,6 @@ interface BulkRestockDialogProps {
   selectedProducts: Product[];
   onSuccess?: () => void;
 }
-
-const bulkRestockSchema = Yup.object({
-  quantity: Yup.number()
-    .typeError('Quantity must be a whole number')
-    .required('Quantity is required')
-    .integer('Quantity must be a whole number')
-    .min(1, 'Quantity must be at least 1')
-    .max(LIMITS.stockMax, `Quantity cannot exceed ${LIMITS.stockMax.toLocaleString()}`),
-  note: Yup.string().trim().max(LIMITS.noteMax, `Note cannot exceed ${LIMITS.noteMax} characters`),
-});
 
 export function BulkRestockDialog({
   open,
@@ -49,7 +38,7 @@ export function BulkRestockDialog({
       quantity: '',
       note: '',
     },
-    validationSchema: bulkRestockSchema,
+    validationSchema: createBulkRestockSchema(),
     onSubmit: (values, { setSubmitting, resetForm }) => {
       const numQuantity = Number(values.quantity);
       const trimmedNote = values.note.trim() || undefined;

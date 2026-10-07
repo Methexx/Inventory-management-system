@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 
 import { STORAGE_KEYS } from '@/constants/storage-keys';
+import { readJSON, writeJSON } from '@/lib/storage';
 
 export type Theme = 'light' | 'dark';
 
+function isTheme(value: unknown): value is Theme {
+  return value === 'light' || value === 'dark';
+}
+
+function getSystemTheme(): Theme {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.theme);
-      if (stored === 'light' || stored === 'dark') return stored;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } catch {
-      return 'light';
-    }
-  });
+  const [theme, setTheme] = useState<Theme>(
+    () => readJSON(STORAGE_KEYS.theme, getSystemTheme(), isTheme).data,
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -22,11 +25,7 @@ export function useTheme() {
     } else {
       root.classList.remove('dark');
     }
-    try {
-      localStorage.setItem(STORAGE_KEYS.theme, theme);
-    } catch {
-      return;
-    }
+    writeJSON(STORAGE_KEYS.theme, theme);
   }, [theme]);
 
   const toggleTheme = () => {

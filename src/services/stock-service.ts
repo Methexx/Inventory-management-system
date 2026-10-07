@@ -115,10 +115,14 @@ export function bulkRestock(
 
   for (const product of matchedProducts) {
     const newStock = product.stock + quantity;
-    const historyId =
-      metadata.historyEntryIds[product.productId] ||
-      metadata.historyEntryIds[product.productId.toUpperCase()] ||
-      `hist-${product.productId}-${Date.now()}`;
+    const historyId = metadata.historyEntryIds[product.productId.toUpperCase()];
+
+    if (!historyId) {
+      return fail(
+        'VALIDATION_ERROR',
+        'A history entry ID is required for every restocked product.',
+      );
+    }
 
     updatedProducts.push({
       ...product,
