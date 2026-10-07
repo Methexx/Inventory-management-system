@@ -1,19 +1,25 @@
+import { useState } from 'react';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { ProductFormDialog } from '@/features/products/product-form-dialog';
 import { ProductList } from '@/features/products/product-list';
 import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
 export function ProductsPage() {
   const { state } = useInventory();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const handleAdd = () => {
-    // Dialog flow wired in subsequent step
+    setSelectedProduct(null);
+    setIsFormOpen(true);
   };
 
-  const handleEdit = (_product: Product) => {
-    void _product;
+  const handleEdit = (product: Product) => {
+    setSelectedProduct(product);
+    setIsFormOpen(true);
   };
 
   const handleDelete = (_product: Product) => {
@@ -49,6 +55,13 @@ export function ProductsPage() {
         onEditProduct={handleEdit}
         onDeleteProduct={handleDelete}
         onAdjustStock={handleAdjustStock}
+      />
+
+      <ProductFormDialog
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        product={selectedProduct}
+        categories={state.categories}
       />
     </div>
   );
