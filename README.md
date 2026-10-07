@@ -1,6 +1,6 @@
 # Inventory Management System (InventoryPro)
 
-A production-grade, frontend-only **Inventory Management System** built with React 19, TypeScript, Tailwind CSS, and Vite. All business rules, validation schemas, and state logic are strictly decoupled and run purely client-side, persisting securely in the browser's `localStorage`.
+A frontend-only **Inventory Management System** built with React 19, TypeScript, Tailwind CSS, and Vite. Its business rules, validation schemas, and state logic run client-side, with data persisted in the browser's `localStorage`.
 
 ---
 
@@ -18,7 +18,7 @@ A production-grade, frontend-only **Inventory Management System** built with Rea
 - **Adjustment Modes:** Dedicated Restock Inbound (+) and Sale Outbound (-) flows.
 - **Real-Time Live Preview:** Instant calculation of current vs. resulting stock levels and delta badge as the user types.
 - **Zero-Stock & Oversell Guard:** Decreases exceeding available stock are strictly blocked ("Only N units in stock"). Stock can never fall below zero.
-- **Audit Logging (Bonus B2):** Every stock mutation creates a cryptographically unique signed movement entry with timestamp, product name snapshot, previous stock, new stock, and optional note.
+- **Audit Logging (Bonus B2):** Every stock mutation creates a unique movement entry with a timestamp, product-name snapshot, previous stock, new stock, and optional note.
 
 ### 3. Executive Dashboard & Visual Analytics
 
@@ -61,7 +61,7 @@ A production-grade, frontend-only **Inventory Management System** built with Rea
 ### 9. Dark Mode & Responsive Design
 
 - **Theme Toggle (Bonus B4):** Seamless Light / Dark mode toggle persisted in `localStorage`.
-- **Responsive Layout:** Responsive desktop table and mobile-optimized card layout designed for screens from 360px up to 4K displays.
+- **Responsive Layout:** Responsive desktop table and mobile-optimized card layout designed for screens from 360px upward.
 
 ---
 
@@ -144,7 +144,7 @@ npm run dev
 | **Type Check**       | `npm run typecheck` | Validates TypeScript types across the codebase            |
 | **Lint**             | `npm run lint`      | Runs ESLint analysis                                      |
 | **Format**           | `npm run format`    | Formats code with Prettier                                |
-| **Run Tests**        | `npm run test:run`  | Executes all 151 unit and component tests via Vitest      |
+| **Run Tests**        | `npm run test:run`  | Executes unit and component tests via Vitest              |
 | **Test Watcher**     | `npm run test`      | Launches Vitest in interactive watch mode                 |
 | **Production Build** | `npm run build`     | Compiles optimized production bundle with chunk splitting |
 | **Preview Build**    | `npm run preview`   | Previews the production bundle locally                    |
@@ -164,6 +164,4 @@ The test suite covers:
 
 ```sh
 npm run test:run
-# Test Files  15 passed (15)
-# Tests       151 passed (151)
 ```
