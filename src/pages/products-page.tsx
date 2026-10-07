@@ -4,9 +4,12 @@ import { toast } from 'sonner';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import { ProductFiltersBar } from '@/features/products/product-filters-bar';
 import { ProductFormDialog } from '@/features/products/product-form-dialog';
 import { ProductList } from '@/features/products/product-list';
 import { StockAdjustDialog } from '@/features/stock/stock-adjust-dialog';
+import { useDebounce } from '@/hooks/use-debounce';
+import { type ProductFilters, selectFilteredProducts } from '@/state/selectors';
 import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
@@ -20,6 +23,58 @@ export function ProductsPage() {
 
   const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
   const [productToAdjust, setProductToAdjust] = useState<Product | null>(null);
+
+  // Search & Filter State
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  const [filters, setFilters] = useState<Omit<ProductFilters, 'search'>>({
+    categoryId: 'all',
+    stockStatus: 'all',
+    sortBy: 'updatedAt',
+    sortOrder: 'desc',
+  });
+
+  const activeFilters: ProductFilters = {
+    search: debouncedSearch,
+    ...filters,
+  };
+
+  const filteredProducts = selectFilteredProducts(state, activeFilters);
+
+  const handleFilterChange = <K extends keyof ProductFilters>(key: K, value: ProductFilters[K]) => {
+    if (key === 'search') {
+      setSearchInput(value as string);
+    } else {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearchInput('');
+    setFilters({
+      categoryId: 'all',
+      stockStatus: 'all',
+      sortBy: 'updatedAt',
+      sortOrder: 'desc',
+    });
+  };
+
+  const handleSort = (field: 'name' | 'productId' | 'price' | 'stock') => {
+    setFilters((prev) => {
+      if (prev.sortBy === field) {
+        return {
+          ...prev,
+          sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return {
+        ...prev,
+        sortBy: field,
+        sortOrder: 'asc',
+      };
+    });
+  };
 
   const handleAdd = () => {
     setSelectedProduct(null);
@@ -85,13 +140,29 @@ export function ProductsPage() {
         </Button>
       </div>
 
-      <ProductList
-        products={state.products}
+      <ProductFiltersBar
+        filters={activeFilters}
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        onFilterChange={handleFilterChange}
+        onResetFilters={handleResetFilters}
         categories={state.categories}
+        totalCount={state.products.length}
+        filteredCount={filteredProducts.length}
+      />
+
+      <ProductList
+        products={filteredProducts}
+        categories={state.categories}
+        totalProductsCount={state.products.length}
+        onClearFilters={handleResetFilters}
         onAddProduct={handleAdd}
         onEditProduct={handleEdit}
         onDeleteProduct={handleDelete}
         onAdjustStock={handleAdjustStock}
+        sortBy={filters.sortBy}
+        sortOrder={filters.sortOrder}
+        onSort={handleSort}
       />
 
       <ProductFormDialog

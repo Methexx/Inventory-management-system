@@ -1,4 +1,5 @@
 import { EmptyState } from '@/components/shared/empty-state';
+import type { ProductFilters } from '@/state/selectors';
 import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 
@@ -8,27 +9,50 @@ import { ProductTable } from './product-table';
 interface ProductListProps {
   products: Product[];
   categories: Category[];
+  totalProductsCount: number;
+  onClearFilters?: () => void;
   onAddProduct: () => void;
   onEditProduct: (product: Product) => void;
   onDeleteProduct: (product: Product) => void;
   onAdjustStock: (product: Product) => void;
+  sortBy?: ProductFilters['sortBy'];
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (field: 'name' | 'productId' | 'price' | 'stock') => void;
 }
 
 export function ProductList({
   products,
   categories,
+  totalProductsCount,
+  onClearFilters,
   onAddProduct,
   onEditProduct,
   onDeleteProduct,
   onAdjustStock,
+  sortBy,
+  sortOrder,
+  onSort,
 }: ProductListProps) {
-  if (products.length === 0) {
+  // Case 1: Store is completely empty
+  if (totalProductsCount === 0) {
     return (
       <EmptyState
         title="No products in inventory"
         description="Get started by creating your first product with auto-generated ID or manual entry."
         actionLabel="Add Product"
         onAction={onAddProduct}
+      />
+    );
+  }
+
+  // Case 2: Store has products, but search/filters returned 0 results
+  if (products.length === 0) {
+    return (
+      <EmptyState
+        title="No matching products found"
+        description="We couldn't find any products matching your current search terms or filter criteria."
+        actionLabel="Clear Filters"
+        onAction={onClearFilters ?? onAddProduct}
       />
     );
   }
@@ -43,6 +67,9 @@ export function ProductList({
           onEdit={onEditProduct}
           onDelete={onDeleteProduct}
           onAdjustStock={onAdjustStock}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={onSort}
         />
       </div>
 
