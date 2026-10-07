@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 import { STORAGE_KEYS } from '@/constants/storage-keys';
 import { readJSON, writeJSON } from '@/lib/storage';
@@ -18,7 +18,7 @@ export function useTheme() {
     () => readJSON(STORAGE_KEYS.theme, getSystemTheme(), isTheme).data,
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
