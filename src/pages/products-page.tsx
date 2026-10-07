@@ -59,7 +59,12 @@ export function ProductsPage() {
 
       <ProductFormDialog
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open) {
+            setSelectedProduct(null);
+          }
+        }}
         product={selectedProduct}
         categories={state.categories}
       />
