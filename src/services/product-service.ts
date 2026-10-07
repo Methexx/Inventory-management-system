@@ -20,16 +20,6 @@ export interface UpdateProductMetadata {
   timestamp: string;
 }
 
-/**
- * Creates a new product and optional initial stock movement entry.
- *
- * Rules:
- * - Product ID is normalised to uppercase and trimmed.
- * - Product ID must be unique among existing products (case-insensitive).
- * - Category must exist.
- * - Validates field boundaries (name length, price > 0 with max 2 decimals, stock bounds).
- * - If stock > 0, creates an 'initial' StockMovement; if stock === 0, historyEntry is null.
- */
 export function createProduct(
   state: InventoryState,
   input: NewProductInput,
@@ -38,7 +28,6 @@ export function createProduct(
   const normalizedId = input.productId.trim().toUpperCase();
   const trimmedName = input.name.trim();
 
-  // 1. Unique Product ID check (case-insensitive)
   const isDuplicateId = state.products.some(
     (p) => p.productId.trim().toUpperCase() === normalizedId,
   );
@@ -46,13 +35,11 @@ export function createProduct(
     return fail('DUPLICATE_PRODUCT_ID', 'A product with this ID already exists.');
   }
 
-  // 2. Category existence check
   const categoryExists = state.categories.some((c) => c.id === input.categoryId);
   if (!categoryExists) {
     return fail('CATEGORY_NOT_FOUND', 'This category no longer exists.');
   }
 
-  // 3. Validation rules
   if (trimmedName.length < LIMITS.nameMin || trimmedName.length > LIMITS.nameMax) {
     return fail(
       'VALIDATION_ERROR',
@@ -120,15 +107,6 @@ export function createProduct(
   return ok({ product, historyEntry });
 }
 
-/**
- * Updates an existing product's mutable fields.
- *
- * Rules:
- * - Product ID and stock are immutable and cannot be changed here.
- * - Product must exist.
- * - Category must exist.
- * - Refreshes `updatedAt` to metadata timestamp.
- */
 export function updateProduct(
   state: InventoryState,
   productId: string,
@@ -189,12 +167,6 @@ export function updateProduct(
   return ok({ product: updatedProduct });
 }
 
-/**
- * Deletes a product from inventory.
- *
- * Returns the removed product so UI can offer Undo.
- * History entries remain intact.
- */
 export function deleteProduct(
   state: InventoryState,
   productId: string,
@@ -211,14 +183,6 @@ export function deleteProduct(
   return ok({ product: existingProduct });
 }
 
-/**
- * Restores a previously deleted product (Undo delete).
- *
- * Rules:
- * - Fails with DUPLICATE_PRODUCT_ID if another product now uses this ID.
- * - Fails with CATEGORY_NOT_FOUND if the product's category was deleted meanwhile.
- * - Preserves existing product metadata and stock without creating a second initial movement.
- */
 export function restoreProduct(
   state: InventoryState,
   product: Product,

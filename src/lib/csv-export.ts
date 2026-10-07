@@ -1,24 +1,14 @@
 import type { Category } from '@/types/category';
 import type { Product } from '@/types/product';
 
-/**
- * Sanitizes a CSV cell to prevent CSV formula injection (DDE attacks)
- * and safely escapes commas, quotes, and newlines.
- *
- * Rules:
- * - If value begins with '=', '+', '-', or '@', prefix with a single quote "'"
- * - If value contains commas, quotes, or newlines, wrap in quotes and escape internal quotes
- */
 export function sanitizeCSVCell(value: string | number): string {
   const str = String(value ?? '');
 
-  // Guard against CSV formula injection
   let sanitized = str;
   if (/^[=+\-@]/.test(str.trimStart())) {
     sanitized = `'${str}`;
   }
 
-  // Quote wrapping and escaping
   if (/[",\r\n]/.test(sanitized)) {
     return `"${sanitized.replace(/"/g, '""')}"`;
   }
@@ -26,9 +16,6 @@ export function sanitizeCSVCell(value: string | number): string {
   return sanitized;
 }
 
-/**
- * Generates an RFC-compliant CSV string from a product list and category dictionary.
- */
 export function generateProductsCSV(products: Product[], categories: Category[]): string {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
 
@@ -57,9 +44,6 @@ export function generateProductsCSV(products: Product[], categories: Category[])
   return [headers.join(','), ...rows.map((row) => row.join(','))].join('\r\n');
 }
 
-/**
- * Triggers a browser download for the provided CSV string.
- */
 export function downloadCSV(csvContent: string, filename?: string): void {
   const today = new Date().toISOString().split('T')[0];
   const name = filename ?? `inventory-${today}.csv`;

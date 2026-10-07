@@ -1,10 +1,6 @@
 import type { InventoryState } from '@/types/inventory';
 import type { InventoryAction } from './inventory-actions';
 
-/**
- * Pure state reducer applying already-validated service results to the inventory state.
- * Never performs side-effects or mutations directly.
- */
 export function inventoryReducer(state: InventoryState, action: InventoryAction): InventoryState {
   switch (action.type) {
     case 'PRODUCT_ADDED': {

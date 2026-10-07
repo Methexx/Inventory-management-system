@@ -4,10 +4,6 @@ import { STORAGE_KEYS } from '@/constants/storage-keys';
 
 export type Theme = 'light' | 'dark';
 
-/**
- * Custom hook managing light/dark theme preference,
- * persisting to localStorage and synchronizing with the document element class.
- */
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     try {
@@ -29,7 +25,7 @@ export function useTheme() {
     try {
       localStorage.setItem(STORAGE_KEYS.theme, theme);
     } catch {
-      // ignore storage access errors
+      return;
     }
   }, [theme]);
 

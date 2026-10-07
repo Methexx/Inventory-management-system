@@ -16,17 +16,6 @@ export interface BulkRestockMetadata {
   historyEntryIds: Record<string, string>;
 }
 
-/**
- * Adjusts a single product's stock (restock or sale).
- *
- * Rules:
- * - Product must exist.
- * - Quantity must be an integer >= 1 and <= LIMITS.stockMax.
- * - Decrease cannot exceed current stock (blocks overselling, stock never < 0).
- * - Increase cannot cause stock to exceed LIMITS.stockMax.
- * - Records a signed StockMovement audit entry ('restock' or 'sale').
- * - Refreshes product `updatedAt` to metadata timestamp.
- */
 export function adjustStock(
   state: InventoryState,
   productId: string,
@@ -89,16 +78,6 @@ export function adjustStock(
   return ok({ product: updatedProduct, historyEntry });
 }
 
-/**
- * Bulk restocks multiple products simultaneously.
- *
- * Rules:
- * - All-or-nothing: if any product ID is missing, nothing is modified.
- * - Deduplicates incoming product IDs.
- * - Quantity must be an integer >= 1.
- * - Validates each product will not exceed LIMITS.stockMax.
- * - Generates history entries for each restocked product.
- */
 export function bulkRestock(
   state: InventoryState,
   productIds: string[],
@@ -117,7 +96,6 @@ export function bulkRestock(
     return fail('VALIDATION_ERROR', `Note cannot exceed ${LIMITS.noteMax} characters.`);
   }
 
-  // Deduplicate candidate IDs
   const uniqueIds = Array.from(new Set(productIds.map((id) => id.trim().toUpperCase())));
 
   const matchedProducts: Product[] = [];

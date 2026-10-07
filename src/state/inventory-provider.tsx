@@ -26,7 +26,6 @@ import {
 import { inventoryReducer } from './inventory-reducer';
 
 export function InventoryProvider({ children }: { children: React.ReactNode }) {
-  // Load initial state lazily from localStorage
   const [{ state: initialState, storageError: initialStorageError }] = useState(() =>
     loadInitialState(),
   );
@@ -34,7 +33,6 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
   const stateRef = useRef(state);
 
-  // Keep stateRef up to date across renders
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
@@ -43,10 +41,8 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
   const [persistenceStatus, setPersistenceStatus] = useState<PersistenceStatus>('idle');
   const [saveTrigger, setSaveTrigger] = useState(0);
 
-  // Track mount status so initial hydration is skipped
   const isFirstMount = useRef(true);
 
-  // Persistence effect: saves after mutations only
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false;
@@ -86,10 +82,6 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
   const retrySave = useCallback(() => {
     setSaveTrigger((t) => t + 1);
   }, []);
-
-  // -------------------------------------------------------------------------
-  // Product actions
-  // -------------------------------------------------------------------------
 
   const addProduct = useCallback((input: NewProductInput): Result<Product> => {
     const timestamp = new Date().toISOString();
@@ -190,10 +182,6 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
     return ok(result.data.product);
   }, []);
 
-  // -------------------------------------------------------------------------
-  // Category actions
-  // -------------------------------------------------------------------------
-
   const addCategory = useCallback((name: string): Result<Category> => {
     const categoryId = createId();
     const result = createCategory(stateRef.current, name, { categoryId });
@@ -239,10 +227,6 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
 
     return ok({ categoryId: id });
   }, []);
-
-  // -------------------------------------------------------------------------
-  // Bulk actions
-  // -------------------------------------------------------------------------
 
   const removeProducts = useCallback((ids: string[]): Result<Product[]> => {
     const normalizedIds = new Set(ids.map((id) => id.trim().toUpperCase()));
