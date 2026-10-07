@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -9,6 +9,7 @@ import { ProductFormDialog } from '@/features/products/product-form-dialog';
 import { ProductList } from '@/features/products/product-list';
 import { StockAdjustDialog } from '@/features/stock/stock-adjust-dialog';
 import { useDebounce } from '@/hooks/use-debounce';
+import { downloadCSV, generateProductsCSV } from '@/lib/csv-export';
 import { type ProductFilters, selectFilteredProducts } from '@/state/selectors';
 import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
@@ -134,10 +135,30 @@ export function ProductsPage() {
           </p>
         </div>
 
-        <Button onClick={handleAdd} className="gap-2 self-start sm:self-auto">
-          <Plus className="h-4 w-4" />
-          <span>Add Product</span>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (state.products.length === 0) {
+                toast.info('No products available to export');
+                return;
+              }
+              const csv = generateProductsCSV(state.products, state.categories);
+              downloadCSV(csv);
+              toast.success(`Exported ${state.products.length} products to CSV`);
+            }}
+            className="gap-2 self-start sm:self-auto"
+            title="Export all inventory products as a CSV file"
+          >
+            <Download className="h-4 w-4" />
+            <span>Export CSV</span>
+          </Button>
+
+          <Button onClick={handleAdd} className="gap-2 self-start sm:self-auto">
+            <Plus className="h-4 w-4" />
+            <span>Add Product</span>
+          </Button>
+        </div>
       </div>
 
       <ProductFiltersBar
