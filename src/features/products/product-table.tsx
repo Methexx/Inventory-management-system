@@ -1,4 +1,4 @@
-import { ArrowUpDown, Edit3, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit3, SlidersHorizontal, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
@@ -18,12 +18,33 @@ interface ProductTableProps {
   onSort?: (field: 'name' | 'productId' | 'price' | 'stock') => void;
 }
 
+function SortIndicator({
+  field,
+  sortBy,
+  sortOrder,
+}: {
+  field: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) {
+  if (sortBy !== field) {
+    return <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground/60" />;
+  }
+  return sortOrder === 'asc' ? (
+    <ArrowUp className="h-3.5 w-3.5 text-primary" />
+  ) : (
+    <ArrowDown className="h-3.5 w-3.5 text-primary" />
+  );
+}
+
 export function ProductTable({
   products,
   categories,
   onEdit,
   onDelete,
   onAdjustStock,
+  sortBy,
+  sortOrder,
   onSort,
 }: ProductTableProps) {
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
@@ -41,7 +62,7 @@ export function ProductTable({
                     className="flex items-center gap-1.5 hover:text-foreground"
                   >
                     <span>Product</span>
-                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    <SortIndicator field="name" sortBy={sortBy} sortOrder={sortOrder} />
                   </button>
                 ) : (
                   'Product'
@@ -54,7 +75,7 @@ export function ProductTable({
                     className="flex items-center gap-1.5 hover:text-foreground"
                   >
                     <span>Product ID</span>
-                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    <SortIndicator field="productId" sortBy={sortBy} sortOrder={sortOrder} />
                   </button>
                 ) : (
                   'Product ID'
@@ -70,7 +91,7 @@ export function ProductTable({
                     className="flex items-center gap-1.5 hover:text-foreground"
                   >
                     <span>Price</span>
-                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    <SortIndicator field="price" sortBy={sortBy} sortOrder={sortOrder} />
                   </button>
                 ) : (
                   'Price'
@@ -83,7 +104,7 @@ export function ProductTable({
                     className="flex items-center gap-1.5 hover:text-foreground"
                   >
                     <span>Stock</span>
-                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    <SortIndicator field="stock" sortBy={sortBy} sortOrder={sortOrder} />
                   </button>
                 ) : (
                   'Stock'
