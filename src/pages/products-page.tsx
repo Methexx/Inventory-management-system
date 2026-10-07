@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ProductFormDialog } from '@/features/products/product-form-dialog';
 import { ProductList } from '@/features/products/product-list';
+import { StockAdjustDialog } from '@/features/stock/stock-adjust-dialog';
 import { useInventory } from '@/state/use-inventory';
 import type { Product } from '@/types/product';
 
@@ -16,6 +17,9 @@ export function ProductsPage() {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
+  const [productToAdjust, setProductToAdjust] = useState<Product | null>(null);
 
   const handleAdd = () => {
     setSelectedProduct(null);
@@ -58,8 +62,9 @@ export function ProductsPage() {
     }
   };
 
-  const handleAdjustStock = (_product: Product) => {
-    void _product;
+  const handleAdjustStock = (product: Product) => {
+    setProductToAdjust(product);
+    setIsAdjustDialogOpen(true);
   };
 
   return (
@@ -99,6 +104,17 @@ export function ProductsPage() {
         }}
         product={selectedProduct}
         categories={state.categories}
+      />
+
+      <StockAdjustDialog
+        open={isAdjustDialogOpen}
+        onOpenChange={(open) => {
+          setIsAdjustDialogOpen(open);
+          if (!open) {
+            setProductToAdjust(null);
+          }
+        }}
+        product={productToAdjust}
       />
 
       <ConfirmDialog
