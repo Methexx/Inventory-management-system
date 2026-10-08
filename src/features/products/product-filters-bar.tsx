@@ -122,7 +122,7 @@ export function ProductFiltersBar({
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <span>
           Showing <strong className="text-foreground">{filteredCount}</strong> of {totalCount}{' '}
           products

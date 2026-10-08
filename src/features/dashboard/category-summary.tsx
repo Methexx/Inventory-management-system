@@ -12,14 +12,17 @@ interface CategorySummaryProps {
 export function CategorySummary({ categories, totalProducts }: CategorySummaryProps) {
   return (
     <Card className="shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
+      <CardHeader className="gap-2 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold text-foreground">
             Products by Category
           </CardTitle>
           <p className="text-xs text-muted-foreground">Distribution across catalog groups</p>
         </div>
-        <Link to="/categories" className="text-xs font-medium text-primary hover:underline">
+        <Link
+          to="/categories"
+          className="self-start text-xs font-medium text-primary hover:underline sm:self-auto"
+        >
           Manage
         </Link>
       </CardHeader>

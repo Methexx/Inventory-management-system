@@ -62,7 +62,7 @@ export function CategoriesPage() {
           </p>
         </div>
 
-        <Button onClick={handleAdd} className="gap-2 self-start sm:self-auto">
+        <Button onClick={handleAdd} className="w-full gap-2 sm:w-auto sm:self-auto">
           <Plus className="h-4 w-4" />
           <span>Add Category</span>
         </Button>

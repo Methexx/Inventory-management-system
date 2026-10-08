@@ -180,7 +180,7 @@ export function ProductsPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Button
             variant="outline"
             onClick={() => {
@@ -192,14 +192,14 @@ export function ProductsPage() {
               downloadCSV(csv);
               toast.success(`Exported ${state.products.length} products to CSV`);
             }}
-            className="gap-2 self-start sm:self-auto"
+            className="flex-1 gap-2 sm:flex-none"
             title="Export all inventory products as a CSV file"
           >
             <Download className="h-4 w-4" />
             <span>Export CSV</span>
           </Button>
 
-          <Button onClick={handleAdd} className="gap-2 self-start sm:self-auto">
+          <Button onClick={handleAdd} className="flex-1 gap-2 sm:flex-none">
             <Plus className="h-4 w-4" />
             <span>Add Product</span>
           </Button>

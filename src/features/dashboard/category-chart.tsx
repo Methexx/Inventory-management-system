@@ -59,7 +59,7 @@ export function CategoryChart({ categories, totalProducts }: CategoryChartProps)
 
   return (
     <Card className="shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold text-foreground">
             Category Analytics
@@ -69,7 +69,7 @@ export function CategoryChart({ categories, totalProducts }: CategoryChartProps)
           </p>
         </div>
 
-        <div className="flex rounded-lg border bg-muted/40 p-0.5 text-xs">
+        <div className="flex self-start rounded-lg border bg-muted/40 p-0.5 text-xs sm:self-auto">
           <button
             type="button"
             onClick={() => setChartType('bar')}

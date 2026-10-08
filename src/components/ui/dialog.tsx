@@ -72,7 +72,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in-0"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4 animate-in fade-in-0"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -84,7 +84,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
       />
       <div
         ref={contentRef}
-        className="relative z-50 w-full max-w-lg rounded-xl border bg-card p-6 shadow-2xl animate-in zoom-in-95"
+        className="relative z-50 my-auto w-full max-w-lg rounded-xl border bg-card p-4 shadow-2xl animate-in zoom-in-95 sm:p-6"
       >
         <Button
           type="button"
@@ -126,5 +126,13 @@ export function DialogDescription({
 }
 
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('mt-6 flex items-center justify-end gap-3', className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        'mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
