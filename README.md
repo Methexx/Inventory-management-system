@@ -132,7 +132,25 @@ src/
 
 ## Screenshots
 
-Screenshots have not yet been added to the repository. Before submission, capture the Dashboard, Products, Categories, and Stock History pages after adding sample inventory data, save them in a committed `screenshots/` folder, and embed them in this section.
+### Dashboard — light mode
+
+![Dashboard in light mode](screenshots/dashboard-light.png)
+
+### Dashboard — dark mode
+
+![Dashboard in dark mode](screenshots/dashboard-dark.png)
+
+### Products — dark mode
+
+![Products page in dark mode](screenshots/products-dark.png)
+
+### Categories — light mode
+
+![Categories page in light mode](screenshots/categories-light.png)
+
+### Stock history — light mode
+
+![Stock history page in light mode](screenshots/stock-history-light.png)
 
 ## Data storage
 
