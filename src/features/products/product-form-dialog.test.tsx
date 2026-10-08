@@ -91,4 +91,54 @@ describe('ProductFormDialog', () => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
   });
+
+  it('clears create form values when the dialog opens again', async () => {
+    const context: InventoryContextValue = {
+      state: { products: [], categories: [category], history: [] },
+      storageError: null,
+      persistenceStatus: 'saved',
+      retrySave: vi.fn(),
+      addProduct: vi.fn().mockReturnValue(ok(product)),
+      editProduct: vi.fn(),
+      removeProduct: vi.fn(),
+      undoRemoveProduct: vi.fn(),
+      adjustStock: vi.fn(),
+      addCategory: vi.fn(),
+      renameCategory: vi.fn(),
+      removeCategory: vi.fn(),
+      removeProducts: vi.fn(),
+      restockProducts: vi.fn(),
+    };
+    const onOpenChange = vi.fn();
+    const renderDialog = (open: boolean) => (
+      <InventoryContext.Provider value={context}>
+        <ProductFormDialog open={open} onOpenChange={onOpenChange} categories={[category]} />
+      </InventoryContext.Provider>
+    );
+
+    const { rerender } = render(renderDialog(true));
+
+    fireEvent.change(screen.getByLabelText('Product Name *'), {
+      target: { value: 'Previous product' },
+    });
+    fireEvent.change(screen.getByLabelText('Product ID (SKU) *'), {
+      target: { value: 'PREVIOUS001' },
+    });
+    fireEvent.change(screen.getByLabelText('Price (LKR) *'), { target: { value: '2500' } });
+
+    rerender(renderDialog(false));
+    rerender(renderDialog(true));
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Product Name *') as HTMLInputElement).value).toBe('');
+      expect((screen.getByLabelText('Product ID (SKU) *') as HTMLInputElement).value).not.toBe(
+        'PREVIOUS001',
+      );
+      expect((screen.getByLabelText('Price (LKR) *') as HTMLInputElement).value).toBe('');
+      expect((screen.getByLabelText('Initial Stock *') as HTMLInputElement).value).toBe('0');
+      expect((screen.getByLabelText('Low Stock Alert Threshold') as HTMLInputElement).value).toBe(
+        '5',
+      );
+    });
+  });
 });
