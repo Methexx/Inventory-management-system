@@ -1,184 +1,139 @@
-# Inventory Management System (InventoryPro)
+# Inventory Management System
 
-A frontend-only **Inventory Management System** for tracking products, stock, and categories. It is built with React 19, TypeScript, Tailwind CSS, and Vite. No server, database, account, or API key is required.
+InventoryPro is a frontend-only inventory management application for tracking products, categories, stock levels, and inventory statistics. It does not use a backend or database. All inventory data and the selected theme are saved in the browser with `localStorage`.
 
----
+## Project overview
 
-## What you can do
+The application helps a user manage an inventory catalogue from one place. Users can add products, assign categories, update incoming or outgoing stock safely, and view stock health and inventory value on a dashboard. The interface is responsive for mobile and desktop screens.
 
-Use the application to add products, organize them into categories, adjust stock for incoming deliveries or sales, and review inventory information from one dashboard. Changes are saved in the current browser through `localStorage`, so they remain after a refresh on the same device and browser.
+## Features implemented
+
+### Required features
+
+- Add products with a product name, product ID, category, price, stock quantity, and low-stock threshold.
+- Edit a product's name, category, price, and low-stock threshold.
+- Delete one product with a confirmation dialog and an Undo action.
+- Increase stock for incoming deliveries and decrease stock for outgoing sales.
+- Prevent stock from going below zero.
+- Show the total number of products, total units, total inventory value in LKR, low-stock count, and out-of-stock count.
+- Create and rename custom categories.
+- Assign a category to every product.
+- Protect default categories and block deletion of a category that is still assigned to products.
+- Filter products by category and stock status.
+- Search products by name or product ID/SKU.
+- Sort products by name, product ID, price, or stock quantity.
+- Show category product counts, category stock totals, and stock-health information on the dashboard.
+- Use a desktop product table and mobile product cards.
+- Use Formik and Yup for every product, category, stock-adjustment, and bulk-restock form.
+- Show clear validation messages for invalid or incomplete form values.
+- Persist products, categories, history, and theme preferences through `localStorage`.
+
+### Bonus and extra features
+
+- **Auto-generated SKU:** Generates collision-checked IDs in the `PRD######` format.
+- **Stock history log:** Records initial stock, restocks, and sales with timestamps, previous stock, resulting stock, and optional notes.
+- **CSV export:** Downloads the full product catalogue as a CSV file. Exported values are protected against spreadsheet formula injection.
+- **Dark mode:** Light and dark theme toggle saved in `localStorage`. The dark theme uses a neutral `#171717` background.
+- **Category analytics:** Switchable bar chart and donut chart for category distribution.
+- **Bulk actions:** Select several products, restock them with one validated form, or delete them together with Undo.
+- **Low-stock warnings:** Product status badges and a dashboard attention list identify low and out-of-stock products.
+- **Debounced search:** Waits briefly while typing to avoid unnecessary filter work.
+- **Responsive interface:** Mobile navigation, stacked actions and forms, scrollable dialogs, and card layouts for small screens.
 
 ## Main pages
 
-| Page       | Purpose                                                                 |
-| ---------- | ----------------------------------------------------------------------- |
-| Dashboard  | View inventory totals, low-stock products, category counts, and charts. |
-| Products   | Add, edit, search, filter, sort, export, and manage products.           |
-| Categories | Create, rename, review, and safely delete custom categories.            |
-| History    | Review recorded initial stock, restocks, and sales.                     |
+| Page          | Purpose                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| Dashboard     | Shows inventory statistics, category analytics, category totals, and stock attention items. |
+| Products      | Adds, edits, deletes, searches, filters, sorts, exports, and bulk-manages products.         |
+| Categories    | Creates, renames, reviews, and safely deletes custom categories.                            |
+| Stock History | Shows and filters the audit trail for initial stock, restocks, and sales.                   |
 
-## Features
+## Tech stack
 
-### Product management
+| Area                  | Technology                                                 |
+| --------------------- | ---------------------------------------------------------- |
+| Framework             | React 19, TypeScript, Vite 8                               |
+| Routing               | React Router 7                                             |
+| Forms and validation  | Formik and Yup                                             |
+| Styling               | Tailwind CSS, class-variance-authority, Lucide React icons |
+| State and persistence | React Context, `useReducer`, browser `localStorage`        |
+| Charts and feedback   | Recharts and Sonner                                        |
+| Testing               | Vitest, jsdom, React Testing Library                       |
+| Code quality          | ESLint, Prettier, Husky, lint-staged, Commitlint           |
 
-- **Add Product:** Formik + Yup validated dialog with fields for Product Name, Product ID (SKU), Category, Price (LKR), Initial Stock, and Low Stock Alert Threshold.
-- **Auto-Generated SKU (Bonus B1):** Built-in "Auto Generate" button creates unique `PRD-XXXXXX` IDs with collision checks.
-- **Edit Product:** Instant editing of name, category, price, and low stock threshold with immutable Product ID and protected stock baseline.
-- **Delete with Undo (Extra E3):** Delete requires explicit confirmation naming the target product, removes it from the catalog, and provides a 6-second **Undo** toast to instantly restore the product and its stock state.
-
-### Stock management
-
-- **Adjustment Modes:** Dedicated Restock Inbound (+) and Sale Outbound (-) flows.
-- **Real-Time Live Preview:** Instant calculation of current vs. resulting stock levels and delta badge as the user types.
-- **Zero-Stock & Oversell Guard:** Decreases exceeding available stock are strictly blocked ("Only N units in stock"). Stock can never fall below zero.
-- **Audit Logging (Bonus B2):** Every stock mutation creates a unique movement entry with a timestamp, product-name snapshot, previous stock, new stock, and optional note.
-
-### Dashboard and analytics
-
-- **Inventory KPIs:** Real-time summary cards for Total Products, Total Inventory Valuation (LKR), Low Stock Alerts, and Out of Stock Count.
-- **Category Analytics (Bonus B5):** Interactive Recharts distribution chart with switchable Bar and Donut views.
-- **Category Breakdown:** Comprehensive inventory share percentage and total unit volume per category.
-- **Stock Attention List:** Quick-action table highlighting products at or below their designated threshold.
-
-### Categories
-
-- **Protected Seed Categories:** Default system categories are protected from rename or deletion.
-- **Guarded Custom Categories:** Custom categories can be created and renamed. Deletions are guarded: categories assigned to active products cannot be deleted until products are reassigned.
-- **Inline Category Creation:** Create new categories directly from the product form without losing input progress.
-
-### Search, filters, and sorting
-
-- **Debounced Search (Extra E5):** 300ms debounced live search query matching both product name and Product ID.
-- **Combined Filtering:** Multi-criteria AND filters for Category and Stock Status (All, In Stock, Low Stock, Out of Stock).
-- **Interactive Column Sorting (Extra E4):** Sort by Name, Product ID, Price, and Stock with visual ascending/descending directional indicators.
-- **No-Results State:** Helpful empty state with one-click filter reset.
-
-### Stock history
-
-- **Audit Trail (`/history`):** Complete chronological log of all initial stocks, inbound restocks, and outbound sales.
-- **Persistent Snapshots:** Movement history retains historical product names even after products are deleted.
-- **Filterable Log:** Filter movements by product, movement type (Restock, Sale, Initial), and note keywords.
-
-### CSV export
-
-- **RFC-Compliant CSV:** Export full catalog with Product ID, Name, Category, Price, Stock, Threshold, and Timestamps.
-- **Formula Injection Defense:** Cell values beginning with `=`, `+`, `-`, or `@` are automatically sanitized to prevent spreadsheet formula execution (DDE attacks).
-
-### Bulk operations
-
-- **Row Selection:** Select all on page or choose individual items across table and card views.
-- **Floating Bulk Bar:** Displays active selection count with quick-action buttons.
-- **Bulk Restock:** Formik + Yup modal allowing simultaneous restock across all selected items with a single audit note.
-- **Bulk Delete with Undo:** All-or-nothing batch deletion with multi-item restoration via toast notification.
-
-### Theme and responsive design
-
-- **Theme Toggle (Bonus B4):** Seamless Light / Dark mode toggle persisted in `localStorage`.
-- **Responsive Layout:** Responsive desktop table and mobile-optimized card layout designed for screens from 360px upward.
-
----
-
-## Tech Stack
-
-| Layer                  | Technologies                                         |
-| ---------------------- | ---------------------------------------------------- |
-| **Framework & UI**     | React 19, TypeScript, React Router 7                 |
-| **Styling & Icons**    | Tailwind CSS, Lucide React, class-variance-authority |
-| **Forms & Validation** | Formik, Yup                                          |
-| **Charts & Feedback**  | Recharts, Sonner Toaster                             |
-| **Build & Tooling**    | Vite 8, ESLint 10, Prettier, PostCSS, Husky          |
-| **Testing**            | Vitest, jsdom, React Testing Library                 |
-
----
-
-## Architecture
-
-The application adheres to clean architecture principles with complete separation between business rules, state transitions, and presentation:
-
-```
-src/
-├── components/          # Reusable UI primitives (Button, Card, Badge, Dialog, Input)
-│   ├── layout/          # AppShell, Topbar, Sidebar
-│   └── shared/          # ConfirmDialog, EmptyState, ThemeToggle, ErrorBoundary
-├── constants/           # Business limits and seed data
-├── features/            # Feature modules
-│   ├── categories/      # CategoryFormDialog
-│   ├── dashboard/       # StatCards, CategorySummary, LowStockList, CategoryChart
-│   ├── products/        # ProductTable, ProductCards, ProductFiltersBar, BulkActionBar
-│   └── stock/           # StockAdjustDialog
-├── hooks/               # useDebounce, useTheme
-├── lib/                 # Pure utilities: storage, format, id, result, csv-export
-├── pages/               # Route entry points: Dashboard, Products, Categories, History
-├── schemas/             # Pure Yup validation schemas with dynamic context factories
-├── services/            # Pure domain services: product-service, stock-service, category-service
-├── state/               # State layer: reducer, actions, selectors, context provider
-└── types/               # TypeScript domain interfaces
-```
-
----
-
-## Getting Started
+## Run locally
 
 ### Prerequisites
 
-- Node.js 18+
-- npm 9+
+- Node.js `20.19+` or `22.12+`
+- npm
 
-### Installation and run
+### Installation
 
-1. Clone the repository:
-
-```sh
+```bash
 git clone https://github.com/Methexx/Inventory-management-system.git
 cd Inventory-management-system
-```
-
-2. Install dependencies:
-
-```sh
 npm install
 ```
 
-3. Start the Vite development server:
+### Start the application
 
-```sh
+```bash
 npm run dev
 ```
 
-4. Open the local address shown in the terminal, usually `http://localhost:5173`.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
 
-### Where your data is stored
+### Create a production build
 
-The project runs entirely in your browser. Products, categories, stock history, and the selected theme are saved under browser `localStorage` keys. Clearing this site's browser storage removes the locally saved inventory.
-
----
-
-## Available Scripts
-
-| Script               | Command             | Purpose                                                   |
-| -------------------- | ------------------- | --------------------------------------------------------- |
-| **Start Dev Server** | `npm run dev`       | Launches local Vite development server                    |
-| **Type Check**       | `npm run typecheck` | Validates TypeScript types across the codebase            |
-| **Lint**             | `npm run lint`      | Runs ESLint analysis                                      |
-| **Format**           | `npm run format`    | Formats code with Prettier                                |
-| **Run Tests**        | `npm run test:run`  | Executes unit and component tests via Vitest              |
-| **Test Watcher**     | `npm run test`      | Launches Vitest in interactive watch mode                 |
-| **Production Build** | `npm run build`     | Compiles optimized production bundle with chunk splitting |
-| **Preview Build**    | `npm run preview`   | Previews the production bundle locally                    |
-
----
-
-## Test Coverage
-
-The test suite covers:
-
-- Safe LocalStorage persistence (quota simulation, corrupt JSON recovery, fallback defaults)
-- Pure business services (stock balance constraints, unique SKU guards, in-use category protection)
-- Yup validation schemas (boundary values, precision formatting, context-based duplicate checks)
-- Selectors and Reducer state transitions
-- CSV export formula sanitization
-- Component-level interactions (Stock adjust dialog, live calculation, overselling warnings)
-
-```sh
-npm run test:run
+```bash
+npm run build
 ```
+
+## Available scripts
+
+| Command                | Purpose                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `npm run dev`          | Starts the Vite development server on `127.0.0.1:3000`. |
+| `npm run build`        | Type-checks and creates an optimized production build.  |
+| `npm run lint`         | Checks code with ESLint.                                |
+| `npm run typecheck`    | Checks TypeScript types.                                |
+| `npm run format`       | Formats files with Prettier.                            |
+| `npm run format:check` | Checks Prettier formatting without changing files.      |
+| `npm run test`         | Starts Vitest in watch mode.                            |
+| `npm run test:run`     | Runs the full automated test suite once.                |
+| `npm run preview`      | Serves the production build locally.                    |
+
+## Code quality workflow
+
+- **Prettier** keeps formatting consistent across TypeScript, CSS, Markdown, and configuration files.
+- **ESLint** checks code quality and React-specific rules.
+- **Husky pre-commit hook** runs lint-staged, which formats and lints changed staged files before a commit is created.
+- **Husky pre-push hook** runs linting, type checking, tests, and the production build before a push can proceed.
+- **Commitlint** accepts only the repository's `feat`, `fix`, and `chore` commit types and blocks co-author trailers.
+- The automated suite currently contains **165 tests** covering services, schemas, reducer state, storage behaviour, utilities, and key form/dialog interactions.
+
+## Project structure
+
+```text
+src/
+├── components/   # Shared UI, layout, dialogs, and feedback components
+├── constants/    # Limits, storage keys, and default categories
+├── features/     # Product, category, stock, and dashboard feature components
+├── hooks/        # Theme and debounce hooks
+├── lib/          # Storage, CSV, ID, formatting, and result utilities
+├── pages/        # Route-level pages
+├── schemas/      # Yup validation schema factories
+├── services/     # Pure product, stock, and category business rules
+├── state/        # Reducer, selectors, context provider, and actions
+└── types/        # TypeScript domain types
+```
+
+## Screenshots
+
+Screenshots have not yet been added to the repository. Before submission, capture the Dashboard, Products, Categories, and Stock History pages after adding sample inventory data, save them in a committed `screenshots/` folder, and embed them in this section.
+
+## Data storage
+
+All data remains in the current browser. Clearing this site's browser storage removes locally saved products, categories, history, and theme preferences.
