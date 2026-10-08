@@ -18,7 +18,7 @@ export function BulkActionBar({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="sticky bottom-4 z-20 mx-auto flex max-w-xl items-center justify-between gap-3 rounded-xl border bg-card/95 p-3 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-bottom-3">
+    <div className="sticky bottom-4 z-20 mx-auto flex w-[calc(100%-2rem)] max-w-xl flex-col gap-3 rounded-xl border bg-card/95 p-3 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-bottom-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
           {selectedCount}
@@ -28,7 +28,7 @@ export function BulkActionBar({
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           type="button"
           size="sm"

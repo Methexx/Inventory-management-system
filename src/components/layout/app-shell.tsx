@@ -25,7 +25,7 @@ export function AppShell() {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar
           onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)}
           isMobileNavOpen={isMobileNavOpen}

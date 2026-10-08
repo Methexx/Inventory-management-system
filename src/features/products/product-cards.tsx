@@ -79,7 +79,7 @@ export function ProductCards({
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-2 border-t pt-3">
+              <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3">
                 <Button
                   variant="outline"
                   size="sm"

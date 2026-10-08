@@ -17,7 +17,7 @@ export function LowStockList({ products, onAdjustStock }: LowStockListProps) {
 
   return (
     <Card className="shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
+      <CardHeader className="gap-2 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -27,7 +27,10 @@ export function LowStockList({ products, onAdjustStock }: LowStockListProps) {
             Products at or below their designated safe threshold
           </p>
         </div>
-        <Link to="/products" className="text-xs font-medium text-primary hover:underline">
+        <Link
+          to="/products"
+          className="self-start text-xs font-medium text-primary hover:underline sm:self-auto"
+        >
           View all
         </Link>
       </CardHeader>
