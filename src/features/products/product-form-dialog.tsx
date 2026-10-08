@@ -36,13 +36,14 @@ export function ProductFormDialog({
   const { state, addProduct, editProduct } = useInventory();
   const isEdit = Boolean(product);
   const formRef = useRef<HTMLFormElement>(null);
+  const wasOpenRef = useRef(false);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
 
   const existingProductIds = useMemo(
     () => state.products.map((p) => p.productId),
     [state.products],
   );
-  const [generatedProductId] = useState(() => {
+  const [generatedProductId, setGeneratedProductId] = useState(() => {
     const result = generateProductId(existingProductIds);
     return result.ok ? result.data : '';
   });
@@ -108,6 +109,7 @@ export function ProductFormDialog({
       }
     },
   });
+  const { resetForm } = formik;
 
   useEffect(() => {
     if (formik.submitCount > 0 && !formik.isValid) {
@@ -120,6 +122,27 @@ export function ProductFormDialog({
       }
     }
   }, [formik.submitCount, formik.isValid, formik.errors]);
+
+  useEffect(() => {
+    if (open && !wasOpenRef.current && !isEdit) {
+      const result = generateProductId(existingProductIds);
+      const productId = result.ok ? result.data : '';
+
+      setGeneratedProductId(productId);
+      resetForm({
+        values: {
+          name: '',
+          productId,
+          categoryId: categories[0]?.id ?? '',
+          price: '',
+          stock: '0',
+          lowStockThreshold: '5',
+        },
+      });
+    }
+
+    wasOpenRef.current = open;
+  }, [categories, existingProductIds, isEdit, open, resetForm]);
 
   const handleGenerateId = () => {
     const res = generateProductId(existingProductIds);
