@@ -112,13 +112,17 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
     const timestamp = new Date().toISOString();
     const result = updateProduct(stateRef.current, productId, input, {
       timestamp,
+      historyEntryId: createId(),
     });
 
     if (!result.ok) return result;
 
     const action = {
       type: 'PRODUCT_UPDATED' as const,
-      payload: { product: result.data.product },
+      payload: {
+        product: result.data.product,
+        historyEntry: result.data.historyEntry,
+      },
     };
 
     stateRef.current = inventoryReducer(stateRef.current, action);

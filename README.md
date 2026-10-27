@@ -11,7 +11,7 @@ The application helps a user manage an inventory catalogue from one place. Users
 ### Required features
 
 - Add products with a product name, product ID, category, price, stock quantity, and low-stock threshold.
-- Edit a product's name, category, price, and low-stock threshold.
+- Edit a product's name, category, price, stock total, and low-stock threshold. Changes to the stock total are recorded as adjustments in Stock History.
 - Delete one product with a confirmation dialog and an Undo action.
 - Increase stock for incoming deliveries and decrease stock for outgoing sales.
 - Prevent stock from going below zero.
@@ -31,7 +31,7 @@ The application helps a user manage an inventory catalogue from one place. Users
 ### Bonus and extra features
 
 - **Auto-generated SKU:** Generates collision-checked IDs in the `PRD######` format.
-- **Stock history log:** Records initial stock, restocks, and sales with timestamps, previous stock, resulting stock, and optional notes.
+- **Stock history log:** Records initial stock, restocks, sales, and adjustments with timestamps, previous stock, resulting stock, and optional notes.
 - **CSV export:** Downloads the full product catalogue as a CSV file. Exported values are protected against spreadsheet formula injection.
 - **Dark mode:** Light and dark theme toggle saved in `localStorage`. The dark theme uses a neutral `#171717` background.
 - **Category analytics:** Switchable bar chart and donut chart for category distribution.
@@ -47,7 +47,7 @@ The application helps a user manage an inventory catalogue from one place. Users
 | Dashboard     | Shows inventory statistics, category analytics, category totals, and stock attention items. |
 | Products      | Adds, edits, deletes, searches, filters, sorts, exports, and bulk-manages products.         |
 | Categories    | Creates, renames, reviews, and safely deletes custom categories.                            |
-| Stock History | Shows and filters the audit trail for initial stock, restocks, and sales.                   |
+| Stock History | Shows and filters the audit trail for initial stock, restocks, sales, and adjustments.      |
 
 ## Tech stack
 
@@ -82,8 +82,6 @@ npm install
 ```bash
 npm run dev
 ```
-
-
 
 ### Create a production build
 

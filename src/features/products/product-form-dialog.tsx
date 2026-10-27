@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LIMITS } from '@/constants/limits';
 import { CategoryFormDialog } from '@/features/categories/category-form-dialog';
 import { formatCurrency } from '@/lib/format';
 import { generateProductId } from '@/lib/id';
@@ -93,6 +94,7 @@ function ProductFormContent({
           categoryId: values.categoryId,
           price: Number(values.price),
           lowStockThreshold: Number(values.lowStockThreshold),
+          ...(Number(values.stock) !== product.stock ? { stock: Number(values.stock) } : {}),
         });
 
         setSubmitting(false);
@@ -129,8 +131,18 @@ function ProductFormContent({
     (formik.values.name.trim() !== product.name ||
       formik.values.categoryId !== product.categoryId ||
       Number(formik.values.price) !== product.price ||
+      Number(formik.values.stock) !== product.stock ||
       Number(formik.values.lowStockThreshold) !== product.lowStockThreshold),
   );
+  const newStock = Number(formik.values.stock);
+  const stockChange = product ? newStock - product.stock : 0;
+  const showStockPreview =
+    product &&
+    String(formik.values.stock).trim() !== '' &&
+    Number.isInteger(newStock) &&
+    newStock >= 0 &&
+    newStock <= LIMITS.stockMax &&
+    stockChange !== 0;
   const searchQuery = formik.values.name.trim().toLowerCase();
   const matchingProducts = useMemo(
     () =>
@@ -194,7 +206,7 @@ function ProductFormContent({
         <DialogTitle>{isEdit ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         <DialogDescription>
           {isEdit
-            ? 'Update product details. Use Stock Adjust to change stock.'
+            ? 'Update product details and stock. Stock changes are recorded in Stock History.'
             : 'Enter a new product, or type at least 3 characters to find an existing one.'}
         </DialogDescription>
       </DialogHeader>
@@ -406,23 +418,38 @@ function ProductFormContent({
               id="product-stock"
               name="stock"
               type="number"
+              min={0}
+              max={LIMITS.stockMax}
               step="1"
               value={formik.values.stock}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              disabled={isEdit}
+              aria-describedby={isEdit ? 'product-stock-help' : undefined}
               aria-invalid={Boolean(formik.touched.stock && formik.errors.stock)}
             />
-            {isEdit ? (
-              <p className="text-xs text-muted-foreground">Stock adjusts via Stock Adjust.</p>
-            ) : (
-              formik.touched.stock &&
-              formik.errors.stock && (
-                <p className="text-xs text-destructive">{formik.errors.stock}</p>
-              )
+            {isEdit && (
+              <p id="product-stock-help" className="text-xs text-muted-foreground">
+                Enter the new total stock quantity.
+              </p>
+            )}
+            {formik.touched.stock && formik.errors.stock && (
+              <p className="text-xs text-destructive">{formik.errors.stock}</p>
             )}
           </div>
         </div>
+
+        {showStockPreview && (
+          <div role="status" className="rounded-lg border bg-muted/40 p-3 text-sm">
+            <p className="font-medium">Stock adjustment</p>
+            <p className="mt-1">
+              {product.stock} → {newStock} units ({stockChange > 0 ? '+' : ''}
+              {stockChange})
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              This adjustment will be saved in Stock History when you update the product.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-1.5">
           <Label htmlFor="product-threshold">Low Stock Alert Threshold</Label>

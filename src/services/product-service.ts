@@ -18,6 +18,7 @@ export interface CreateProductMetadata {
 
 export interface UpdateProductMetadata {
   timestamp: string;
+  historyEntryId: string;
 }
 
 export function createProduct(
@@ -112,7 +113,7 @@ export function updateProduct(
   productId: string,
   input: EditProductInput,
   metadata: UpdateProductMetadata,
-): Result<{ product: Product }> {
+): Result<{ product: Product; historyEntry: StockMovement | null }> {
   const normalizedId = productId.trim().toUpperCase();
 
   const existingProduct = state.products.find(
@@ -155,16 +156,40 @@ export function updateProduct(
     return fail('VALIDATION_ERROR', 'Low stock threshold must be a valid whole number.');
   }
 
+  const newStock = input.stock ?? existingProduct.stock;
+  if (!Number.isInteger(newStock) || newStock < 0 || newStock > LIMITS.stockMax) {
+    return fail(
+      'VALIDATION_ERROR',
+      `Stock must be a whole number between 0 and ${LIMITS.stockMax.toLocaleString()}.`,
+    );
+  }
+
   const updatedProduct: Product = {
     ...existingProduct,
     name: trimmedName,
     categoryId: input.categoryId,
     price: input.price,
     lowStockThreshold: input.lowStockThreshold,
+    stock: newStock,
     updatedAt: metadata.timestamp,
   };
 
-  return ok({ product: updatedProduct });
+  const historyEntry: StockMovement | null =
+    newStock !== existingProduct.stock
+      ? {
+          id: metadata.historyEntryId,
+          productId: existingProduct.productId,
+          productName: trimmedName,
+          type: 'adjustment',
+          change: newStock - existingProduct.stock,
+          previousStock: existingProduct.stock,
+          newStock,
+          note: 'Stock adjusted from product form.',
+          timestamp: metadata.timestamp,
+        }
+      : null;
+
+  return ok({ product: updatedProduct, historyEntry });
 }
 
 export function deleteProduct(

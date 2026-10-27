@@ -41,6 +41,13 @@ function MovementTypeBadge({ type }: { type: MovementType }) {
           <span>Sale</span>
         </Badge>
       );
+    case 'adjustment':
+      return (
+        <Badge variant="secondary" className="gap-1">
+          <RotateCcw className="h-3 w-3" />
+          <span>Adjustment</span>
+        </Badge>
+      );
     case 'initial':
     default:
       return (
@@ -100,7 +107,8 @@ export function HistoryPage() {
             Stock History
           </h2>
           <p className="text-sm text-muted-foreground sm:text-base">
-            Complete audit trail of all inventory restocks, sales, and initial quantities.
+            Complete audit trail of all inventory restocks, sales, adjustments, and initial
+            quantities.
           </p>
         </div>
       </div>
@@ -147,6 +155,7 @@ export function HistoryPage() {
                 <option value="all">All Types</option>
                 <option value="restock">Restock (+)</option>
                 <option value="sale">Sale (-)</option>
+                <option value="adjustment">Adjustment</option>
                 <option value="initial">Initial Stock</option>
               </select>
             </div>
@@ -177,7 +186,7 @@ export function HistoryPage() {
       {state.history.length === 0 ? (
         <EmptyState
           title="No stock movements recorded"
-          description="Stock movements will automatically be logged here whenever products are added, restocked, or sold."
+          description="Stock movements will automatically be logged here whenever products are added, restocked, sold, or adjusted."
         />
       ) : filteredHistory.length === 0 ? (
         <EmptyState

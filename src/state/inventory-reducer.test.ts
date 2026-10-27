@@ -91,7 +91,7 @@ describe('inventoryReducer', () => {
 
     const nextState = inventoryReducer(baseState, {
       type: 'PRODUCT_UPDATED',
-      payload: { product: updated },
+      payload: { product: updated, historyEntry: null },
     });
 
     expect(nextState.products).toHaveLength(1);

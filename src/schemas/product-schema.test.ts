@@ -155,18 +155,18 @@ describe('createProductSchema', () => {
   });
 
   // Edit mode differences
-  it('allows existing product ID and skips stock checks in edit mode', async () => {
+  it('allows existing product ID with valid stock in edit mode', async () => {
     const editSchema = createProductSchema({
       ...defaultContext,
       mode: 'edit',
     });
 
-    // In edit mode, productId is already in existingProductIds and stock is not validated
     const editData = {
       name: 'Updated Mouse',
       productId: 'PRD-000001',
       categoryId: 'cat-1',
       price: 3000,
+      stock: 10,
     };
 
     await expect(editSchema.validate(editData)).resolves.toBeTruthy();

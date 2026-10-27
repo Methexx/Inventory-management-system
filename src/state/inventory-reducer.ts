@@ -13,13 +13,14 @@ export function inventoryReducer(state: InventoryState, action: InventoryAction)
     }
 
     case 'PRODUCT_UPDATED': {
-      const { product } = action.payload;
+      const { product, historyEntry } = action.payload;
       const normalizedTargetId = product.productId.trim().toUpperCase();
       return {
         ...state,
         products: state.products.map((p) =>
           p.productId.trim().toUpperCase() === normalizedTargetId ? product : p,
         ),
+        history: historyEntry ? [...state.history, historyEntry] : state.history,
       };
     }
 

@@ -10,7 +10,7 @@ export type InventoryAction =
     }
   | {
       type: 'PRODUCT_UPDATED';
-      payload: { product: Product };
+      payload: { product: Product; historyEntry: StockMovement | null };
     }
   | {
       type: 'PRODUCT_DELETED';

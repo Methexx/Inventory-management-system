@@ -108,7 +108,7 @@ describe('ProductFormDialog', () => {
       expect((screen.getByLabelText(label) as HTMLInputElement).value).toBe(value);
     }
     expect((screen.getByLabelText('Product ID (SKU) *') as HTMLInputElement).disabled).toBe(true);
-    expect((screen.getByLabelText('Current Stock') as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText('Current Stock') as HTMLInputElement).disabled).toBe(false);
     const update = screen.getByRole('button', { name: 'Update Product' }) as HTMLButtonElement;
     expect(update.disabled).toBe(true);
     fireEvent.submit(update.closest('form')!);
@@ -137,6 +137,60 @@ describe('ProductFormDialog', () => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
     expect(context.addProduct).not.toHaveBeenCalled();
+  });
+
+  it('previews stock changes and disables update again when the stock is restored', async () => {
+    const user = userEvent.setup();
+    const { context, onOpenChange } = renderForm({
+      state: { products: [product], categories: [category], history: [] },
+    });
+    await user.type(screen.getByLabelText('Product Name *'), 'mou');
+    await user.click(screen.getByRole('option', { name: /Wireless Mouse/ }));
+    const stock = screen.getByLabelText('Current Stock');
+    const update = screen.getByRole('button', { name: 'Update Product' }) as HTMLButtonElement;
+    expect(update.disabled).toBe(true);
+    fireEvent.change(stock, { target: { value: '12' } });
+    expect(screen.getByRole('status').textContent).toContain('8 → 12 units (+4)');
+    expect(update.disabled).toBe(false);
+    fireEvent.change(stock, { target: { value: '3' } });
+    expect(screen.getByRole('status').textContent).toContain('8 → 3 units (-5)');
+    fireEvent.change(stock, { target: { value: '8' } });
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(update.disabled).toBe(true);
+
+    fireEvent.change(stock, { target: { value: '0' } });
+    await user.click(update);
+    await waitFor(() => {
+      expect(context.editProduct).toHaveBeenCalledWith(product.productId, {
+        name: product.name,
+        categoryId: category.id,
+        price: product.price,
+        lowStockThreshold: product.lowStockThreshold,
+        stock: 0,
+      });
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+    expect(context.addProduct).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['', 'Stock is required'],
+    ['-1', 'Stock cannot be negative'],
+    ['1.5', 'Stock must be a whole number'],
+    ['1000001', 'Stock cannot exceed 1,000,000'],
+  ])('rejects invalid existing-product stock "%s"', async (stock, message) => {
+    const user = userEvent.setup();
+    const { context, onOpenChange } = renderForm({
+      state: { products: [product], categories: [category], history: [] },
+    });
+    await user.type(screen.getByLabelText('Product Name *'), 'mou');
+    await user.click(screen.getByRole('option', { name: /Wireless Mouse/ }));
+    fireEvent.change(screen.getByLabelText('Current Stock'), { target: { value: stock } });
+    await user.click(screen.getByRole('button', { name: 'Update Product' }));
+    expect(await screen.findByText(message)).toBeDefined();
+    expect(context.editProduct).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
   it('supports keyboard selection and dismisses suggestions without closing the dialog', async () => {

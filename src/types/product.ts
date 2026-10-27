@@ -23,4 +23,5 @@ export interface EditProductInput {
   categoryId: string;
   price: number;
   lowStockThreshold: number;
+  stock?: number;
 }

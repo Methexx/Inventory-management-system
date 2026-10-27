@@ -202,7 +202,7 @@ describe('product-service', () => {
           price: 18000,
           lowStockThreshold: 6,
         },
-        { timestamp: '2026-01-03T12:00:00.000Z' },
+        { timestamp: '2026-01-03T12:00:00.000Z', historyEntryId: 'hist-edit-1' },
       );
 
       expect(result.ok).toBe(true);
@@ -210,6 +210,7 @@ describe('product-service', () => {
         expect(result.data.product.productId).toBe('PRD-100');
         expect(result.data.product.name).toBe('Upgraded Mechanical Keyboard');
         expect(result.data.product.stock).toBe(10); // unmodified
+        expect(result.data.historyEntry).toBeNull();
         expect(result.data.product.createdAt).toBe('2026-01-01T00:00:00.000Z'); // preserved
         expect(result.data.product.updatedAt).toBe('2026-01-03T12:00:00.000Z'); // refreshed
       }
@@ -225,7 +226,7 @@ describe('product-service', () => {
           price: 1000,
           lowStockThreshold: 2,
         },
-        { timestamp: '2026-01-03T12:00:00.000Z' },
+        { timestamp: '2026-01-03T12:00:00.000Z', historyEntryId: 'hist-edit-1' },
       );
 
       expect(result.ok).toBe(false);
@@ -242,11 +243,63 @@ describe('product-service', () => {
           price: 1000,
           lowStockThreshold: 2,
         },
-        { timestamp: '2026-01-03T12:00:00.000Z' },
+        { timestamp: '2026-01-03T12:00:00.000Z', historyEntryId: 'hist-edit-1' },
       );
 
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error.code).toBe('CATEGORY_NOT_FOUND');
+    });
+
+    it.each([15, 4, 0])('records an adjustment when the new total stock is %s', (stock) => {
+      const result = updateProduct(
+        initialState,
+        existingProduct.productId,
+        { ...existingProduct, name: 'Updated Keyboard', stock },
+        { timestamp: '2026-01-03T12:00:00.000Z', historyEntryId: 'hist-edit-1' },
+      );
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.product.stock).toBe(stock);
+        expect(result.data.product.name).toBe('Updated Keyboard');
+        expect(result.data.historyEntry).toEqual({
+          id: 'hist-edit-1',
+          productId: existingProduct.productId,
+          productName: 'Updated Keyboard',
+          type: 'adjustment',
+          previousStock: 10,
+          newStock: stock,
+          change: stock - 10,
+          note: 'Stock adjusted from product form.',
+          timestamp: '2026-01-03T12:00:00.000Z',
+        });
+      }
+      expect(initialState.products[0].stock).toBe(10);
+      expect(initialState.history).toHaveLength(0);
+    });
+
+    it('does not record an adjustment when stock is unchanged', () => {
+      const result = updateProduct(
+        initialState,
+        existingProduct.productId,
+        { ...existingProduct, price: 16000 },
+        { timestamp: '2026-01-03T12:00:00.000Z', historyEntryId: 'hist-edit-1' },
+      );
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.data.historyEntry).toBeNull();
+    });
+
+    it.each([-1, 1.5, 1_000_001, NaN, Infinity])('rejects invalid stock %s', (stock) => {
+      const result = updateProduct(
+        initialState,
+        existingProduct.productId,
+        { ...existingProduct, name: 'Should not save', stock },
+        { timestamp: '2026-01-03T12:00:00.000Z', historyEntryId: 'hist-edit-1' },
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe('VALIDATION_ERROR');
+      expect(initialState.products[0]).toEqual(existingProduct);
+      expect(initialState.history).toHaveLength(0);
     });
   });
 

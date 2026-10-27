@@ -36,15 +36,13 @@ export function createProductSchema({
           )
       : Yup.string();
 
-  const stockSchema =
-    mode === 'create'
-      ? Yup.number()
-          .typeError('Stock must be a whole number')
-          .required('Stock is required')
-          .integer('Stock must be a whole number')
-          .min(0, 'Stock cannot be negative')
-          .max(LIMITS.stockMax, `Stock cannot exceed ${LIMITS.stockMax.toLocaleString()}`)
-      : Yup.number();
+  const stockSchema = Yup.number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .typeError('Stock must be a whole number')
+    .required('Stock is required')
+    .integer('Stock must be a whole number')
+    .min(0, 'Stock cannot be negative')
+    .max(LIMITS.stockMax, `Stock cannot exceed ${LIMITS.stockMax.toLocaleString()}`);
 
   return Yup.object({
     name: Yup.string()
