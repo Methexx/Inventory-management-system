@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ok } from '@/lib/result';
@@ -28,7 +29,7 @@ function renderForm(overrides?: Partial<InventoryContextValue>) {
     persistenceStatus: 'saved',
     retrySave: vi.fn(),
     addProduct: vi.fn().mockReturnValue(ok(product)),
-    editProduct: vi.fn(),
+    editProduct: vi.fn().mockReturnValue(ok(product)),
     removeProduct: vi.fn(),
     undoRemoveProduct: vi.fn(),
     adjustStock: vi.fn(),
@@ -42,16 +43,145 @@ function renderForm(overrides?: Partial<InventoryContextValue>) {
 
   const onOpenChange = vi.fn();
 
-  render(
+  const renderDialog = (open: boolean) => (
     <InventoryContext.Provider value={context}>
-      <ProductFormDialog open={true} onOpenChange={onOpenChange} categories={[category]} />
-    </InventoryContext.Provider>,
+      <ProductFormDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        categories={context.state.categories}
+      />
+    </InventoryContext.Provider>
   );
+  const { rerender } = render(renderDialog(true));
 
-  return { context, onOpenChange };
+  return { context, onOpenChange, setOpen: (open: boolean) => rerender(renderDialog(open)) };
 }
 
 describe('ProductFormDialog', () => {
+  it('searches from the third character and updates matches on every keystroke', async () => {
+    const user = userEvent.setup();
+    renderForm({
+      state: {
+        products: [product, { ...product, productId: 'PRD-654321', name: 'Wired Keyboard' }],
+        categories: [category],
+        history: [],
+      },
+    });
+    const name = screen.getByRole('combobox', { name: 'Product Name *' });
+    await user.type(name, 'WI');
+    expect(screen.queryByRole('listbox')).toBeNull();
+    await user.type(name, 'R');
+    expect(screen.getAllByRole('option', { name: /PRD-/ })).toHaveLength(2);
+    await user.type(name, 'EL');
+    expect(screen.getAllByRole('option', { name: /PRD-/ })).toHaveLength(1);
+    await user.keyboard('{Backspace}');
+    expect(screen.getAllByRole('option', { name: /PRD-/ })).toHaveLength(2);
+    await user.clear(name);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    await user.type(name, 'unmatched');
+    expect(screen.getByRole('status').textContent).toContain('No matching products');
+    expect(screen.getByRole('button', { name: 'Create Product' })).toBeDefined();
+  });
+
+  it('fills all fields and updates the selected product without creating a duplicate', async () => {
+    const user = userEvent.setup();
+    const otherCategory: Category = {
+      id: 'cat-accessories',
+      name: 'Accessories',
+      isDefault: false,
+    };
+    const existingProduct = { ...product, categoryId: otherCategory.id };
+    const { context, onOpenChange } = renderForm({
+      state: { products: [existingProduct], categories: [category, otherCategory], history: [] },
+    });
+    await user.type(screen.getByLabelText('Product Name *'), 'mou');
+    await user.click(screen.getByRole('option', { name: /Wireless Mouse/ }));
+    expect(screen.queryByRole('listbox')).toBeNull();
+    for (const [label, value] of [
+      ['Product Name *', 'Wireless Mouse'],
+      ['Product ID (SKU) *', product.productId],
+      ['Category *', otherCategory.id],
+      ['Price (LKR) *', '3500'],
+      ['Current Stock', '8'],
+      ['Low Stock Alert Threshold', '2'],
+    ]) {
+      expect((screen.getByLabelText(label) as HTMLInputElement).value).toBe(value);
+    }
+    expect((screen.getByLabelText('Product ID (SKU) *') as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText('Current Stock') as HTMLInputElement).disabled).toBe(true);
+    const update = screen.getByRole('button', { name: 'Update Product' }) as HTMLButtonElement;
+    expect(update.disabled).toBe(true);
+    fireEvent.submit(update.closest('form')!);
+    await waitFor(() => expect(update.disabled).toBe(true));
+    expect(context.editProduct).not.toHaveBeenCalled();
+
+    const price = screen.getByLabelText('Price (LKR) *');
+    await user.clear(price);
+    await user.type(price, '4000');
+    expect(update.disabled).toBe(false);
+    await user.clear(price);
+    await user.type(price, '3500.00');
+    expect(update.disabled).toBe(true);
+    await user.type(screen.getByLabelText('Product Name *'), ' ');
+    expect(update.disabled).toBe(true);
+    await user.clear(price);
+    await user.type(price, '4000');
+    await user.click(update);
+    await waitFor(() => {
+      expect(context.editProduct).toHaveBeenCalledWith(product.productId, {
+        name: product.name,
+        categoryId: otherCategory.id,
+        price: 4000,
+        lowStockThreshold: 2,
+      });
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+    expect(context.addProduct).not.toHaveBeenCalled();
+  });
+
+  it('supports keyboard selection and dismisses suggestions without closing the dialog', async () => {
+    const user = userEvent.setup();
+    const { context, onOpenChange } = renderForm({
+      state: { products: [product], categories: [category], history: [] },
+    });
+    const name = screen.getByLabelText('Product Name *');
+    await user.type(name, 'wir');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await user.keyboard('{ArrowDown}');
+    expect(name.getAttribute('aria-activedescendant')).toBe('product-match-0');
+    await user.keyboard('{Enter}');
+    expect((name as HTMLInputElement).value).toBe(product.name);
+    expect(
+      (screen.getByRole('button', { name: 'Update Product' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(context.addProduct).not.toHaveBeenCalled();
+    expect(context.editProduct).not.toHaveBeenCalled();
+  });
+
+  it('can return to creation and clears the selection when reopened', async () => {
+    const user = userEvent.setup();
+    const { setOpen } = renderForm({
+      state: { products: [product], categories: [category], history: [] },
+    });
+    await user.type(screen.getByLabelText('Product Name *'), 'wir');
+    await user.click(screen.getByRole('option', { name: /Wireless Mouse/ }));
+    await user.click(screen.getByRole('button', { name: 'Create a new product instead' }));
+    expect((screen.getByLabelText('Product Name *') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Price (LKR) *') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Product ID (SKU) *') as HTMLInputElement).disabled).toBe(false);
+    expect(screen.getByRole('button', { name: 'Create Product' })).toBeDefined();
+
+    await user.type(screen.getByLabelText('Product Name *'), 'wir');
+    await user.click(screen.getByRole('option', { name: /Wireless Mouse/ }));
+    setOpen(false);
+    setOpen(true);
+    expect((screen.getByLabelText('Product Name *') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Initial Stock *') as HTMLInputElement).value).toBe('0');
+    expect(screen.getByRole('button', { name: 'Create Product' })).toBeDefined();
+  });
+
   it('shows Formik validation errors for incomplete product details', async () => {
     renderForm();
 
