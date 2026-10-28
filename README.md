@@ -1,4 +1,4 @@
-# Inventory Management System
+ # Inventory Management System
 
 InventoryPro is a frontend-only inventory management application for tracking products, categories, stock levels, and inventory statistics. It does not use a backend or database. All inventory data and the selected theme are saved in the browser with `localStorage`.
 
